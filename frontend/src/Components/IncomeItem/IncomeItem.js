@@ -17,8 +17,8 @@ function IncomeItem({
     type
 }) {
 
-    const categoryIcon = () =>{
-        switch(category) {
+    const categoryIcon = () => {
+        switch (category) {
             case 'salary':
                 return money;
             case 'freelancing':
@@ -82,7 +82,7 @@ function IncomeItem({
                         </p>
                     </div>
                     <div className="btn-con">
-                        <Button 
+                        <Button
                             icon={trash}
                             bPad={'1rem'}
                             bRad={'50%'}
