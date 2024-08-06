@@ -124,11 +124,14 @@ const FormStyled = styled.form`
         input{
             width: 100%;
         }
+
+        div{
+            width: 100%;
+        }
     }
 
     .selects{
         display: flex;
-        justify-content: flex-end;
         select{
             color: rgba(34, 34, 96, 0.4);
             &:focus, &:active{

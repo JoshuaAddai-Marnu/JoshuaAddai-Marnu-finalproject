@@ -3,8 +3,9 @@ import styled from 'styled-components'
 import avatar from '../../Img/avatar.png'
 import { signout } from '../../Utils/Icons'
 import { menuItems } from '../../Utils/menuItems'
+import { Link, NavLink } from 'react-router-dom'
 
-function Navigation({ active, setActive }) {
+function Navigation() {
 
     return (
         <NavStyled>
@@ -17,14 +18,13 @@ function Navigation({ active, setActive }) {
             </div>
             <ul className="menu-items">
                 {menuItems.map((item) => {
-                    return <li
+                    return <NavLink
                         key={item.id}
-                        onClick={() => setActive(item.id)}
-                        className={active === item.id ? 'active' : ''}
+                        to={item.link}
                     >
                         {item.icon}
                         <span>{item.title}</span>
-                    </li>
+                    </NavLink>
                 })}
             </ul>
             <div className="bottom-nav">
@@ -74,7 +74,7 @@ const NavStyled = styled.nav`
         flex: 1;
         display: flex;
         flex-direction: column;
-        li{
+        a{
             display: grid;
             grid-template-columns: 40px auto;
             align-items: center;
@@ -85,6 +85,7 @@ const NavStyled = styled.nav`
             color: rgba(34, 34, 96, .6);
             padding-left: 1rem;
             position: relative;
+            text-decoration: none;
             i{
                 color: rgba(34, 34, 96, 0.6);
                 font-size: 1.4rem;
