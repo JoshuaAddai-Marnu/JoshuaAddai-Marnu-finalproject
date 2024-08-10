@@ -1,20 +1,21 @@
 import React from 'react'
 import styled from 'styled-components'
-import avatar from '../../Img/avatar.png'
+import JBB from '../../Img/JBB.png'
 import { signout } from '../../Utils/Icons'
 import { menuItems } from '../../Utils/menuItems'
 import { Link, NavLink } from 'react-router-dom'
 
 function Navigation() {
-
     return (
         <NavStyled>
             <div className="user-con">
-                <img src={avatar} alt="" />
-                <div className="text">
-                    <h2>Rob</h2>
-                    <p>Your Money</p>
-                </div>
+                <img src={JBB} alt="" />
+                <TextContainer>
+                    <div className="text">
+                        <h2>Welcome, Joshua</h2>
+                        <p>Your Money</p>
+                    </div>
+                </TextContainer>
             </div>
             <ul className="menu-items">
                 {menuItems.map((item) => {
@@ -48,14 +49,14 @@ const NavStyled = styled.nav`
     flex-direction: column;
     justify-content: space-between;
     gap: 2rem;
+
     .user-con{
-        height: 100px;
         display: flex;
         align-items: center;
         gap: 1rem;
         img{
-            width: 80px;
-            height: 80px;
+            width: 150px;
+            height: 150px;
             border-radius: 50%;
             object-fit: cover;
             background: #fcf6f9;
@@ -63,13 +64,8 @@ const NavStyled = styled.nav`
             padding: .2rem;
             box-shadow: 0px 1px 17px rgba(0, 0, 0, 0.06);
         }
-        h2{
-            color: rgba(34, 34, 96, 1);
-        }
-        p{
-            color: rgba(34, 34, 96, .6);
-        }
     }
+
     .menu-items{
         flex: 1;
         display: flex;
@@ -108,6 +104,28 @@ const NavStyled = styled.nav`
             height: 100%;
             background: #222260;
             border-radius: 0 10px 10px 0;
+        }
+    }
+`;
+
+const TextContainer = styled.div`
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+
+    h1 {
+        font-size: 1.5rem;
+        color: rgba(34, 34, 96, 1);
+    }
+
+    .text {
+        h2 {
+            color: rgba(34, 34, 96, 1);
+            font-size: 1.2rem;
+        }
+        p {
+            color: rgba(34, 34, 96, .6);
+            font-size: 1rem;
         }
     }
 `;

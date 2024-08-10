@@ -16,6 +16,8 @@ import {
 } from 'react-router-dom';
 import Login from './Components/Login/Login';
 import Signup from './Components/Login/Signup';
+import Goals from './Components/Goals/Goal';
+import DebtTracker from './Components/DebtTracker.js/Debt';
 
 function App() {
   const [active, setActive] = React.useState(1);
@@ -40,6 +42,9 @@ function App() {
             <Route path="income" element={<Income />} />
             <Route path="expenses" element={<Expenses />} />
             <Route path="transactions" element={<Dashboard />} />
+            <Route path="goals" element={<Goals />} />
+            <Route path="debts" element={<DebtTracker />} />
+
           </Routes>
         </main>
       </MainLayout>
