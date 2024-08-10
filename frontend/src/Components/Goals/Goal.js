@@ -2,6 +2,10 @@ import React, { useState } from 'react';
 import styled from 'styled-components';
 import { InnerLayout } from '../../Styles/Layouts';
 import { plus, circle } from '../../Utils/Icons';
+import { Bar } from 'react-chartjs-2';
+import { Chart as ChartJs, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend } from 'chart.js';
+
+ChartJs.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 
 function Goals() {
     const [goals, setGoals] = useState([]);
@@ -17,7 +21,7 @@ function Goals() {
             id: Date.now(),
             name: goalName,
             targetAmount: parseFloat(targetAmount),
-            contributedAmount: 0
+            contributedAmount: 0,
         };
         setGoals([...goals, newGoal]);
         setGoalName('');
@@ -31,7 +35,7 @@ function Goals() {
             if (goal.id === parseInt(selectedGoal)) {
                 return {
                     ...goal,
-                    contributedAmount: goal.contributedAmount + parseFloat(contribution)
+                    contributedAmount: goal.contributedAmount + parseFloat(contribution),
                 };
             }
             return goal;
@@ -41,92 +45,119 @@ function Goals() {
     };
 
     return (
-        <GoalStyled>
+        <GoalsStyled>
             <InnerLayout>
-                <h1>Set Financial Goals</h1>
+                <h1>Set Your Goals</h1>
+                <ContentContainer>
+                    <LeftSide>
+                        <GoalForm onSubmit={addGoal}>
+                            <h2>{plus} Add New Goal</h2>
+                            <input
+                                type="text"
+                                placeholder="Goal Name"
+                                value={goalName}
+                                onChange={(e) => setGoalName(e.target.value)}
+                                required
+                            />
+                            <input
+                                type="number"
+                                placeholder="Target Amount (£)"
+                                value={targetAmount}
+                                onChange={(e) => setTargetAmount(e.target.value)}
+                                required
+                            />
+                            <button type="submit">Add Goal</button>
+                        </GoalForm>
 
-                <GoalForm onSubmit={addGoal}>
-                    <h2>{plus} Add New Goal</h2>
-                    <input
-                        type="text"
-                        placeholder="Goal Name"
-                        value={goalName}
-                        onChange={(e) => setGoalName(e.target.value)}
-                        required
-                    />
-                    <input
-                        type="number"
-                        placeholder="Target Amount (£)"
-                        value={targetAmount}
-                        onChange={(e) => setTargetAmount(e.target.value)}
-                        required
-                    />
-                    <button type="submit">Add Goal</button>
-                </GoalForm>
+                        <GoalForm onSubmit={contributeToGoal}>
+                            <h2>{circle} Contribute to Goal</h2>
+                            <select
+                                value={selectedGoal}
+                                onChange={(e) => setSelectedGoal(e.target.value)}
+                                required
+                            >
+                                <option value="">Select Goal</option>
+                                {goals.map(goal => (
+                                    <option key={goal.id} value={goal.id}>{goal.name}</option>
+                                ))}
+                            </select>
+                            <input
+                                type="number"
+                                placeholder="Contribution (£)"
+                                value={contribution}
+                                onChange={(e) => setContribution(e.target.value)}
+                                required
+                            />
+                            <button type="submit">Contribute</button>
+                        </GoalForm>
+                    </LeftSide>
 
-                <GoalForm onSubmit={contributeToGoal}>
-                    <h2>{circle} Contribute to Goal</h2>
-                    <select
-                        value={selectedGoal}
-                        onChange={(e) => setSelectedGoal(e.target.value)}
-                        required
-                    >
-                        <option value="">Select Goal</option>
-                        {goals.map(goal => (
-                            <option key={goal.id} value={goal.id}>{goal.name}</option>
-                        ))}
-                    </select>
-                    <input
-                        type="number"
-                        placeholder="Contribution (£)"
-                        value={contribution}
-                        onChange={(e) => setContribution(e.target.value)}
-                        required
-                    />
-                    <button type="submit">Contribute</button>
-                </GoalForm>
-
-                <GoalList>
-                    <h2>Your Goals</h2>
-                    {goals.map(goal => (
-                        <div key={goal.id} className="goal-item">
-                            <h3>{goal.name}</h3>
-                            <p>Target: £{goal.targetAmount.toFixed(2)}</p>
-                            <p>Contributed: £{goal.contributedAmount.toFixed(2)}</p>
-                            <p>Progress: {((goal.contributedAmount / goal.targetAmount) * 100).toFixed(2)}%</p>
-                            <ProgressBar progress={(goal.contributedAmount / goal.targetAmount) * 100} />
-                        </div>
-                    ))}
-                </GoalList>
+                    <RightSide>
+                        <GoalList>
+                            <h2>Your Goals</h2>
+                            {goals.map(goal => (
+                                <div key={goal.id} className="goal-item">
+                                    <h3>{goal.name}</h3>
+                                    <p>Target: £{goal.targetAmount.toFixed(2)}</p>
+                                    <p>Contributed: £{goal.contributedAmount.toFixed(2)}</p>
+                                    <p>Remaining: £{(goal.targetAmount - goal.contributedAmount).toFixed(2)}</p>
+                                    <p>Progress: {((goal.contributedAmount / goal.targetAmount) * 100).toFixed(2)}%</p>
+                                    <BarChart progress={(goal.contributedAmount / goal.targetAmount) * 100} />
+                                </div>
+                            ))}
+                        </GoalList>
+                    </RightSide>
+                </ContentContainer>
             </InnerLayout>
-        </GoalStyled>
+        </GoalsStyled>
     );
 }
 
-const GoalStyled = styled.div`
+const GoalsStyled = styled.div`
     padding: 2rem;
-    background: var(--background-color); // Use the global background color
+    background: var(--background-color);
     border-radius: 10px;
-    max-width: 800px; // Increased max-width for better readability
+    max-width: 1200px;
     margin: 2rem auto;
-    text-align: center;
+    text-align: left;
 
     h1 {
         font-size: 2rem;
-        color: var(--primary-color); // Use global primary color
+        color: var(--primary-color);
+        text-align: center;
+        margin-bottom: 2rem;
     }
 `;
 
+const ContentContainer = styled.div`
+    display: flex;
+    justify-content: space-between;
+    gap: 2rem;
+`;
+
+const LeftSide = styled.div`
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+`;
+
+const RightSide = styled.div`
+    flex: 2;
+`;
+
 const GoalForm = styled.form`
-    margin-bottom: 2rem;
+    background: var(--form-background-color);
+    padding: 0.5rem;
+    border-radius: 10px;
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
 
     h2 {
         margin-bottom: 1rem;
         font-size: 1.5rem;
-        color: var(--primary-color); // Use global primary color
+        color: var(--primary-color);
         display: flex;
         align-items: center;
-        justify-content: center;
         gap: 0.5rem;
     }
 
@@ -137,30 +168,37 @@ const GoalForm = styled.form`
         border-radius: 5px;
         border: 1px solid #ddd;
         font-size: 1rem;
-        background: var(--input-background-color); // Use global input background color
+        background: var(--input-background-color);
     }
 
     button {
         padding: 0.75rem 2rem;
         border: none;
         border-radius: 5px;
-        background-color: var(--button-bg-color); // Use global button background color
-        color: var(--button-text-color); // Use global button text color
+        background-color: var(--button-bg-color);
+        color: var(--button-text-color);
         font-size: 1rem;
         cursor: pointer;
         transition: background-color 0.3s ease;
 
         &:hover {
-            background-color: var(--button-hover-bg-color); // Use global button hover color
+            background-color: var(--button-hover-bg-color);
         }
     }
 `;
 
 const GoalList = styled.div`
+    background: var(--list-background-color);
+    padding: 2rem;
+    border-radius: 10px;
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+    max-height: 500px; /* Set a max-height for scrolling */
+    overflow-y: auto; /* Enable vertical scrolling */
+
     h2 {
         margin-bottom: 1rem;
         font-size: 1.5rem;
-        color: var(--primary-color); // Use global primary color
+        color: var(--primary-color);
     }
 
     .goal-item {
@@ -172,13 +210,13 @@ const GoalList = styled.div`
 
         h3 {
             font-size: 1.25rem;
-            color: var(--primary-color); // Use global primary color
+            color: var(--primary-color);
         }
 
         p {
             margin: 0.25rem 0;
             font-size: 1rem;
-            color: var(--text-color); // Use global text color
+            color: var(--text-color);
         }
     }
 `;
@@ -196,10 +234,58 @@ const ProgressBar = styled.div`
         display: block;
         height: 100%;
         width: ${({ progress }) => progress}%;
-        background-color: var(--progress-bar-color); // Use global progress bar color
+        background-color: var(--progress-bar-color);
         border-radius: 10px;
         transition: width 0.3s ease;
     }
 `;
+
+const BarChart = ({ progress }) => {
+    const data = {
+        labels: ['Progress'],
+        datasets: [
+            {
+                label: 'Contributed (%)',
+                data: [progress],
+                backgroundColor: 'rgba(75, 192, 192, 0.6)',
+                borderColor: 'rgba(75, 192, 192, 1)',
+                borderWidth: 1,
+            },
+            {
+                label: 'Remaining (%)',
+                data: [100 - progress],
+                backgroundColor: 'rgba(255, 99, 132, 0.6)',
+                borderColor: 'rgba(255, 99, 132, 1)',
+                borderWidth: 1,
+            },
+        ],
+    };
+
+    const options = {
+        indexAxis: 'y',
+        scales: {
+            x: {
+                beginAtZero: true,
+                max: 100,
+            },
+        },
+        plugins: {
+            legend: {
+                display: false,
+            },
+            tooltip: {
+                enabled: true,
+            },
+        },
+        responsive: true,
+        maintainAspectRatio: false,
+    };
+
+    return (
+        <div style={{ height: '50px', width: '100%' }}>
+            <Bar data={data} options={options} />
+        </div>
+    );
+};
 
 export default Goals;
