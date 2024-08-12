@@ -182,7 +182,8 @@ const PieChartContainer = styled.div`
     border-radius: 20px;
     padding: 1rem;
     max-width: 400px;
-
+    height: 510px; /* Set a fixed height */
+    
     h3 {
         text-align: center;
         margin-bottom: 1rem;

@@ -180,6 +180,7 @@ const PieChartContainer = styled.div`
     border-radius: 20px;
     padding: 1rem;
     max-width: 400px;
+    height: 510px; /* Set a fixed height */
 
     h3 {
         text-align: center;
@@ -188,7 +189,7 @@ const PieChartContainer = styled.div`
 
     canvas {
         max-width: 100%;
-        height: auto;
+        height: 100px; /* Adjust the canvas height accordingly */
     }
 `;
 

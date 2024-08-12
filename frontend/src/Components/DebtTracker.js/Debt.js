@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import styled from 'styled-components';
+import styled, { keyframes } from 'styled-components';
 import { InnerLayout } from '../../Styles/Layouts';
+import Button from '../Button/Button';
 import { plus, circle } from '../../Utils/Icons';
 import { Bar } from 'react-chartjs-2';
 import { Chart as ChartJs, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend } from 'chart.js';
@@ -13,51 +14,132 @@ function DebtTracker() {
     const [totalAmount, setTotalAmount] = useState('');
     const [payment, setPayment] = useState('');
     const [selectedDebt, setSelectedDebt] = useState('');
+    const [debtDate, setDebtDate] = useState('');
+    const [paymentDate, setPaymentDate] = useState('');
+    const [editingDebtId, setEditingDebtId] = useState(null);
+    const [errorMessage, setErrorMessage] = useState('');
+    const [paymentError, setPaymentError] = useState('');
+    const [successMessage, setSuccessMessage] = useState('');
 
-    // Function to add a new debt
-    const addDebt = (e) => {
+    // Function to add or edit a debt
+    const addOrEditDebt = (e) => {
         e.preventDefault();
+
+        if (!debtName || !totalAmount || parseFloat(totalAmount) <= 0 || !debtDate) {
+            setErrorMessage('Please enter a valid debt name, amount, and date.');
+            setSuccessMessage('');
+            return;
+        }
+
         const newDebt = {
-            id: Date.now(),
+            id: editingDebtId || Date.now(),
             name: debtName,
             totalAmount: parseFloat(totalAmount),
-            paidAmount: 0,
+            paidAmount: editingDebtId
+                ? debts.find(debt => debt.id === editingDebtId).paidAmount
+                : 0,
+            dateAdded: debtDate,
+            payments: editingDebtId
+                ? debts.find(debt => debt.id === editingDebtId).payments
+                : [],
+            showPayments: false,
         };
-        setDebts([...debts, newDebt]);
+
+        if (editingDebtId) {
+            // Update existing debt
+            setDebts(debts.map(debt => (debt.id === editingDebtId ? newDebt : debt)));
+            setEditingDebtId(null);
+            setSuccessMessage('Debt updated successfully!');
+        } else {
+            // Add new debt
+            setDebts([...debts, newDebt]);
+            setSuccessMessage('Debt added successfully!');
+        }
+
         setDebtName('');
         setTotalAmount('');
+        setDebtDate('');
+        setErrorMessage('');
+        setTimeout(() => setSuccessMessage(''), 3000);
     };
 
-    // Function to make a payment towards a debt
+    // Function to delete a debt
+    const deleteDebt = (id) => {
+        setDebts(debts.filter(debt => debt.id !== id));
+        setSuccessMessage('Debt deleted successfully!');
+        setTimeout(() => setSuccessMessage(''), 3000);
+    };
+
+    // Function to edit a debt
+    const startEditingDebt = (id) => {
+        const debtToEdit = debts.find(debt => debt.id === id);
+        setDebtName(debtToEdit.name);
+        setTotalAmount(debtToEdit.totalAmount.toString());
+        setDebtDate(debtToEdit.dateAdded);
+        setEditingDebtId(id);
+    };
+
     const makePayment = (e) => {
         e.preventDefault();
+
+        if (!selectedDebt || !payment || parseFloat(payment) <= 0 || !paymentDate) {
+            setPaymentError('Please select a debt, enter a valid payment amount, and select a payment date.');
+            setSuccessMessage('');
+            return;
+        }
+
         const updatedDebts = debts.map(debt => {
             if (debt.id === parseInt(selectedDebt)) {
+                const newPaidAmount = debt.paidAmount + parseFloat(payment);
+                if (newPaidAmount > debt.totalAmount) {
+                    setPaymentError('Payment exceeds the total debt amount.');
+                    setSuccessMessage('');
+                    return debt;
+                }
+                const newPayment = {
+                    amount: parseFloat(payment),
+                    date: paymentDate
+                };
                 return {
                     ...debt,
-                    paidAmount: debt.paidAmount + parseFloat(payment),
+                    paidAmount: newPaidAmount,
+                    payments: [...debt.payments, newPayment],
                 };
             }
             return debt;
         });
         setDebts(updatedDebts);
         setPayment('');
+        setPaymentDate('');
+        setSelectedDebt('');
+        setPaymentError('');
+        setSuccessMessage('Payment made successfully!');
+        setTimeout(() => setSuccessMessage(''), 3000);
+    };
+
+    const togglePayments = (id) => {
+        setDebts(debts.map(debt =>
+            debt.id === id ? { ...debt, showPayments: !debt.showPayments } : debt
+        ));
     };
 
     return (
         <DebtTrackerStyled>
             <InnerLayout>
-                <h1>Track Your Debts</h1>
+                <h1>Debt Tracker</h1>
                 <ContentContainer>
                     <LeftSide>
-                        <DebtForm onSubmit={addDebt}>
-                            <h2>{plus} Add New Debt</h2>
+                        <DebtForm onSubmit={addOrEditDebt}>
+                            <h2>{plus} {editingDebtId ? 'Edit Debt' : 'Add New Debt'}</h2>
+                            {errorMessage && <ErrorMessage>{errorMessage}</ErrorMessage>}
+                            {successMessage && <SuccessMessage>{successMessage}</SuccessMessage>}
                             <input
                                 type="text"
                                 placeholder="Debt Name"
                                 value={debtName}
                                 onChange={(e) => setDebtName(e.target.value)}
                                 required
+                                aria-label="Debt Name"
                             />
                             <input
                                 type="number"
@@ -65,16 +147,34 @@ function DebtTracker() {
                                 value={totalAmount}
                                 onChange={(e) => setTotalAmount(e.target.value)}
                                 required
+                                aria-label="Total Amount in Pounds"
                             />
-                            <button type="submit">Add Debt</button>
+                            <input
+                                type="date"
+                                value={debtDate}
+                                onChange={(e) => setDebtDate(e.target.value)}
+                                required
+                                aria-label="Debt Date"
+                            />
+                            <Button
+                                name={editingDebtId ? 'Update' : 'Add'}
+                                icon={plus}
+                                bPad={'.8rem 1.6rem'}
+                                bRad={'30px'}
+                                bg={'var(--color-accent)'}
+                                color={'#fff'}
+                                aria-label={editingDebtId ? 'Update Debt' : 'Add Debt'}
+                            />
                         </DebtForm>
 
                         <DebtForm onSubmit={makePayment}>
                             <h2>{circle} Make a Payment</h2>
+                            {paymentError && <ErrorMessage>{paymentError}</ErrorMessage>}
                             <select
                                 value={selectedDebt}
                                 onChange={(e) => setSelectedDebt(e.target.value)}
                                 required
+                                aria-label="Select Debt"
                             >
                                 <option value="">Select Debt</option>
                                 {debts.map(debt => (
@@ -87,24 +187,73 @@ function DebtTracker() {
                                 value={payment}
                                 onChange={(e) => setPayment(e.target.value)}
                                 required
+                                aria-label="Payment Amount in Pounds"
                             />
-                            <button type="submit">Make Payment</button>
+                            <input
+                                type="date"
+                                value={paymentDate}
+                                onChange={(e) => setPaymentDate(e.target.value)}
+                                required
+                                aria-label="Payment Date"
+                            />
+                            <Button
+                                name={'Pay'}
+                                icon={plus}
+                                bPad={'.8rem 1.6rem'}
+                                bRad={'30px'}
+                                bg={'var(--color-accent)'}
+                                color={'#fff'}
+                                aria-label="Make Payment"
+                            />
                         </DebtForm>
                     </LeftSide>
 
                     <RightSide>
-                        <DebtList>
+                        <DebtList aria-live="polite">
                             <h2>Your Debts</h2>
-                            {debts.map(debt => (
-                                <div key={debt.id} className="debt-item">
-                                    <h3>{debt.name}</h3>
-                                    <p>Total: £{debt.totalAmount.toFixed(2)}</p>
-                                    <p>Paid: £{debt.paidAmount.toFixed(2)}</p>
-                                    <p>Remaining: £{(debt.totalAmount - debt.paidAmount).toFixed(2)}</p>
-                                    <p>Progress: {((debt.paidAmount / debt.totalAmount) * 100).toFixed(2)}%</p>
-                                    <BarChart progress={(debt.paidAmount / debt.totalAmount) * 100} />
-                                </div>
-                            ))}
+                            {debts.length === 0 ? (
+                                <p>No debts added yet.</p>
+                            ) : (
+                                debts.map(debt => (
+                                    <DebtItem key={debt.id} className="debt-item">
+                                        <h3>{debt.name}</h3>
+                                        <p>Total: £{debt.totalAmount.toFixed(2)}</p>
+                                        <p>Paid: £{debt.paidAmount.toFixed(2)}</p>
+                                        <p>Remaining: £{(debt.totalAmount - debt.paidAmount).toFixed(2)}</p>
+                                        <p>Progress: {((debt.paidAmount / debt.totalAmount) * 100).toFixed(2)}%</p>
+                                        <p>Date Added: {debt.dateAdded}</p>
+                                        <ButtonContainer>
+                                            <Button
+                                                name="Edit"
+                                                icon={circle}
+                                                bPad={'.4rem 1rem'}
+                                                bRad={'20px'}
+                                                bg={'#f0ad4e'}
+                                                color={'#fff'}
+                                                onClick={() => startEditingDebt(debt.id)}
+                                            />
+                                            <Button
+                                                name="Delete"
+                                                icon={circle}
+                                                bPad={'.4rem 1rem'}
+                                                bRad={'20px'}
+                                                bg={'#d9534f'}
+                                                color={'#fff'}
+                                                onClick={() => deleteDebt(debt.id)}
+                                            />
+                                        </ButtonContainer>
+                                        <TogglePaymentsButton onClick={() => togglePayments(debt.id)}>
+                                            {debt.showPayments ? 'Hide Payment Details' : 'Show Payment Details'}
+                                        </TogglePaymentsButton>
+                                        {debt.showPayments && debt.payments.map((payment, index) => (
+                                            <PaymentDetail key={index}>
+                                                {index + 1}. Payment of £{payment.amount.toFixed(2)} on {payment.date}
+                                            </PaymentDetail>
+                                        ))}
+                                        <BarChart progress={(debt.paidAmount / debt.totalAmount) * 100} />
+                                    </DebtItem>
+                                ))
+                            )}
                         </DebtList>
                     </RightSide>
                 </ContentContainer>
@@ -113,19 +262,31 @@ function DebtTracker() {
     );
 }
 
+// Fade-in animation for Debt Items
+const fadeIn = keyframes`
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+`;
+
 const DebtTrackerStyled = styled.div`
-    padding: 2rem;
-    background: var(--background-color);
+    padding: 0rem;
     border-radius: 10px;
     max-width: 1200px;
-    margin: 2rem auto;
+    margin: 1rem auto;
     text-align: left;
+    background: transparent;
 
     h1 {
-        font-size: 2rem;
-        color: var(--primary-color);
+        font-size: 2.5rem;
+        color: #333;
         text-align: center;
-        margin-bottom: 2rem;
+        margin-bottom: 1rem;
     }
 `;
 
@@ -133,13 +294,17 @@ const ContentContainer = styled.div`
     display: flex;
     justify-content: space-between;
     gap: 2rem;
+
+    @media (max-width: 768px) {
+        flex-direction: column;
+    }
 `;
 
 const LeftSide = styled.div`
     flex: 1;
     display: flex;
     flex-direction: column;
-    gap: 2rem;
+    gap: 1rem;
 `;
 
 const RightSide = styled.div`
@@ -147,97 +312,136 @@ const RightSide = styled.div`
 `;
 
 const DebtForm = styled.form`
-    background: var(--form-background-color);
-    padding: 0.5rem;
-    border-radius: 10px;
-    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+    background: #fff;
+    padding: 1rem;
+    border-radius: 15px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    text-align: center;
 
     h2 {
-        margin-bottom: 1rem;
-        font-size: 1.5rem;
-        color: var(--primary-color);
+        margin-bottom: 0.5rem;
+        font-size: 1.75rem;
+        color: #4caf50;
         display: flex;
         align-items: center;
         gap: 0.5rem;
+        justify-content: center;
     }
 
     input, select {
         width: 100%;
-        padding: 0.75rem;
+        padding: 0.5rem 1rem;
         margin: 0.5rem 0;
         border-radius: 5px;
-        border: 1px solid #ddd;
-        font-size: 1rem;
-        background: var(--input-background-color);
-    }
-
-    button {
-        padding: 0.75rem 2rem;
         border: none;
-        border-radius: 5px;
-        background-color: var(--button-bg-color);
-        color: var(--button-text-color);
         font-size: 1rem;
+        background: transparent;
+        box-shadow: 0px 1px 15px rgba(0, 0, 0, 0.06);
+        color: rgba(34, 34, 96, 0.9);
+
+        &::placeholder {
+            color: rgba(34, 34, 96, 0.4);
+        }
+    }
+    button {
+        width: 100%;
+        margin-top: 0rem;
+        box-shadow: 0px 1px 15px rgba(0, 0, 0, 0.06);
         cursor: pointer;
         transition: background-color 0.3s ease;
 
         &:hover {
-            background-color: var(--button-hover-bg-color);
+            background-color: var(--color-green) !important;
         }
     }
 `;
 
 const DebtList = styled.div`
-    background: var(--list-background-color);
+    background: #fff;
     padding: 2rem;
-    border-radius: 10px;
-    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
-    max-height: 500px; /* Set a max-height for scrolling */
-    overflow-y: auto; /* Enable vertical scrolling */
+    border-radius: 15px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    max-height: 585px;
+    overflow-y: auto;
+    text-align: center;
 
     h2 {
         margin-bottom: 1rem;
-        font-size: 1.5rem;
-        color: var(--primary-color);
+        font-size: 1.75rem;
+        color: #4caf50;
     }
 
-    .debt-item {
-        background: white;
-        border-radius: 10px;
-        padding: 1rem;
-        margin-bottom: 1rem;
-        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-
-        h3 {
-            font-size: 1.25rem;
-            color: var(--primary-color);
-        }
-
-        p {
-            margin: 0.25rem 0;
-            font-size: 1rem;
-            color: var(--text-color);
-        }
+    p {
+        font-size: 1rem;
+        color: #333;
     }
 `;
 
-const ProgressBar = styled.div`
-    width: 100%;
-    height: 20px;
-    background: #ddd;
+const DebtItem = styled.div`
+    background: #FCF6F9;
     border-radius: 10px;
-    margin-top: 0.5rem;
-    position: relative;
+    padding: 2rem;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    animation: ${fadeIn} 0.5s ease-in-out;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 1rem;
 
-    &::after {
-        content: '';
-        display: block;
-        height: 100%;
-        width: ${({ progress }) => progress}%;
-        background-color: var(--progress-bar-color);
-        border-radius: 10px;
-        transition: width 0.3s ease;
+    h3 {
+        font-size: 1.5rem;
+        color: #333;
+        margin-bottom: 0.5rem;
+        flex-basis: 100%;
     }
+
+    p {
+        font-size: 1rem;
+        color: #555;
+        flex-basis: calc(50% - 1rem);
+    }
+`;
+
+const ButtonContainer = styled.div`
+    display: flex;
+    gap: 1rem;
+    flex-basis: 100%;
+    justify-content: center;
+    margin-top: 1rem;
+`;
+
+const TogglePaymentsButton = styled.button`
+    background-color: #4caf50;
+    color: #fff;
+    padding: 0.5rem 1rem;
+    margin-top: 0.5rem;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+
+    &:hover {
+        background-color: #45a049;
+    }
+`;
+
+const PaymentDetail = styled.div`
+    font-size: 0.9rem;
+    color: #666;
+    margin-top: 0.25rem;
+`;
+
+const ErrorMessage = styled.div`
+    color: red;
+    font-size: 1rem;
+    margin-bottom: 1rem;
+`;
+
+const SuccessMessage = styled.div`
+    color: green;
+    font-size: 1rem;
+    margin-bottom: 1rem;
 `;
 
 const BarChart = ({ progress }) => {
@@ -245,7 +449,7 @@ const BarChart = ({ progress }) => {
         labels: ['Progress'],
         datasets: [
             {
-                label: 'Paid (%)',
+                label: 'Contributed (%)',
                 data: [progress],
                 backgroundColor: 'rgba(75, 192, 192, 0.6)',
                 borderColor: 'rgba(75, 192, 192, 1)',

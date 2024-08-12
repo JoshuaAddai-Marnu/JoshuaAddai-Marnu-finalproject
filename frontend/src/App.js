@@ -18,6 +18,9 @@ import Login from './Components/Login/Login';
 import Signup from './Components/Login/Signup';
 import Goals from './Components/Goals/Goal';
 import DebtTracker from './Components/DebtTracker.js/Debt';
+import WageCalculator from './Components/WageCalc/WageCalc';
+import Home from './Components/Home/Home';
+
 
 function App() {
   const [active, setActive] = React.useState(1);
@@ -41,9 +44,10 @@ function App() {
             <Route path="dashboard" element={<Dashboard />} />
             <Route path="income" element={<Income />} />
             <Route path="expenses" element={<Expenses />} />
-            <Route path="transactions" element={<Dashboard />} />
+            <Route path="home" element={<Home />} />
             <Route path="goals" element={<Goals />} />
             <Route path="debts" element={<DebtTracker />} />
+            <Route path="wageCalc" element={<WageCalculator />} />
 
           </Routes>
         </main>

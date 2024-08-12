@@ -1,20 +1,36 @@
-import { useEffect, useState } from "react"
-
+import { useEffect, useState } from 'react';
 
 export const useWindowSize = () => {
-    const [size, setSize] = useState([window.innerWidth, window.innerHeight])
+    const [size, setSize] = useState({
+        width: typeof window !== 'undefined' ? window.innerWidth : undefined,
+        height: typeof window !== 'undefined' ? window.innerHeight : undefined
+    });
 
     useEffect(() => {
+        let timeoutId = null;
+
         const updateSize = () => {
-            setSize([window.innerWidth, window.innerHeight])
-        }
-        window.addEventListener('resize', updateSize)
+            if (timeoutId) {
+                clearTimeout(timeoutId);
+            }
+            timeoutId = setTimeout(() => {
+                setSize({
+                    width: window.innerWidth,
+                    height: window.innerHeight
+                });
+            }, 150); // Adjust the debounce interval (in ms) as needed
+        };
 
-        return () => window.removeEventListener('resize', updateSize)
-    }, [])
+        window.addEventListener('resize', updateSize);
 
-    return {
-        width: size[0],
-        height: size[1]
-    }
-}
+        // Clean up the event listener on component unmount
+        return () => {
+            window.removeEventListener('resize', updateSize);
+            if (timeoutId) {
+                clearTimeout(timeoutId);
+            }
+        };
+    }, []);
+
+    return size;
+};

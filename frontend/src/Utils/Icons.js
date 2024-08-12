@@ -30,3 +30,4 @@ export const tv = <i className="fa-solid fa-tv"></i>
 export const circle = <i className="fa-solid fa-circle-dot"></i>
 export const goal = <i class="fa-solid fa-bullseye"></i>
 export const loan = <i class="fa-solid fa-scale-unbalanced"></i>
+export const wage = <i class="fa-solid fa-hand-holding-dollar"></i>
