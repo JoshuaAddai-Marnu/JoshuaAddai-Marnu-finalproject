@@ -1,9 +1,8 @@
-import React from 'react'
-import styled from 'styled-components'
+import React from 'react';
+import styled from 'styled-components';
 import { dateFormat } from '../../Utils/dateFormat';
 import { bitcoin, book, calender, card, circle, clothing, comment, pound, food, freelance, medical, money, piggy, stocks, takeaway, trash, tv, users, yt } from '../../Utils/Icons';
 import Button from '../Button/Button';
-
 
 function IncomeItem({
     id,
@@ -16,13 +15,12 @@ function IncomeItem({
     indicatorColor,
     type
 }) {
-
     const categoryIcon = () => {
         switch (category) {
             case 'salary':
                 return money;
             case 'freelancing':
-                return freelance
+                return freelance;
             case 'investments':
                 return stocks;
             case 'stocks':
@@ -36,9 +34,9 @@ function IncomeItem({
             case 'other':
                 return piggy;
             default:
-                return ''
+                return '';
         }
-    }
+    };
 
     const expenseCatIcon = () => {
         switch (category) {
@@ -59,11 +57,9 @@ function IncomeItem({
             case 'other':
                 return circle;
             default:
-                return ''
+                return '';
         }
-    }
-
-    console.log('type', type)
+    };
 
     return (
         <IncomeItemStyled indicator={indicatorColor}>
@@ -96,7 +92,7 @@ function IncomeItem({
                 </div>
             </div>
         </IncomeItemStyled>
-    )
+    );
 }
 
 const IncomeItemStyled = styled.div`
@@ -111,6 +107,13 @@ const IncomeItemStyled = styled.div`
     gap: 1rem;
     width: 100%;
     color: #222260;
+    transition: all 0.3s ease-in-out;
+
+    @media (max-width: 768px) {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
     .icon{
         width: 80px;
         height: 80px;
@@ -120,8 +123,14 @@ const IncomeItemStyled = styled.div`
         align-items: center;
         justify-content: center;
         border: 2px solid #FFFFFF;
+        transition: transform 0.3s ease-in-out;
         i{
             font-size: 2.6rem;
+        }
+
+        @media (max-width: 768px) {
+            width: 60px;
+            height: 60px;
         }
     }
 
@@ -129,21 +138,33 @@ const IncomeItemStyled = styled.div`
         flex: 1;
         display: flex;
         flex-direction: column;
-        gap: .2rem;
+        gap: 0.5rem;
+
         h5{
             font-size: 1.3rem;
             padding-left: 2rem;
             position: relative;
+
+            @media (max-width: 768px) {
+                padding-left: 1rem;
+                font-size: 1.1rem;
+            }
+
             &::before{
                 content: '';
                 position: absolute;
                 left: 0;
                 top: 50%;
                 transform: translateY(-50%);
-                width: .8rem;
-                height: .8rem;
+                width: 0.8rem;
+                height: 0.8rem;
                 border-radius: 50%;
                 background: ${props => props.indicator};
+
+                @media (max-width: 768px) {
+                    width: 0.6rem;
+                    height: 0.6rem;
+                }
             }
         }
 
@@ -151,20 +172,45 @@ const IncomeItemStyled = styled.div`
             display: flex;
             justify-content: space-between;
             align-items: center;
+
+            @media (max-width: 768px) {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 0.5rem;
+            }
+
             .text{
                 display: flex;
                 align-items: center;
                 gap: 1.5rem;
+
+                @media (max-width: 768px) {
+                    gap: 1rem;
+                    flex-direction: column;
+                    align-items: flex-start;
+                }
+
                 p{
                     display: flex;
                     align-items: center;
                     gap: 0.5rem;
                     color: var(--primary-color);
                     opacity: 0.8;
+
+                    @media (max-width: 768px) {
+                        font-size: 0.9rem;
+                    }
                 }
             }
         }
     }
+
+    &:hover {
+        transform: translateY(-5px);
+        .icon {
+            transform: scale(1.1);
+        }
+    }
 `;
 
-export default IncomeItem
+export default IncomeItem;

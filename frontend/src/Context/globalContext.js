@@ -1,5 +1,7 @@
-import React, { useContext, useState } from "react"
+import React, { useContext, useEffect, useState } from "react"
 import axios from 'axios'
+import { AuthProvider } from "./authContext";
+import { toast } from "react-toastify";
 
 
 const BASE_URL = "http://localhost:3001/api/v1/";
@@ -7,35 +9,62 @@ const BASE_URL = "http://localhost:3001/api/v1/";
 
 const GlobalContext = React.createContext()
 
-export const GlobalProvider = ({children}) => {
+export const GlobalProvider = ({ children }) => {
 
     const [incomes, setIncomes] = useState([])
     const [expenses, setExpenses] = useState([])
     const [error, setError] = useState(null)
 
+    useEffect(() => {
+        error && toast(error, { type: "error" })
+    }, [error])
+
     //calculate incomes
     const addIncome = async (income) => {
-        const response = await axios.post(`${BASE_URL}add-income`, income)
-            .catch((err) =>{
+        const response = await axios.post(`${BASE_URL}add-income`, income, {
+            headers: {
+                "Authorization": `Bearer ${localStorage.getItem("JB_TOKEN")}`
+            }
+        })
+            .catch((err) => {
                 setError(err.response.data.message)
             })
         getIncomes()
     }
 
     const getIncomes = async () => {
-        const response = await axios.get(`${BASE_URL}get-incomes`)
+        const response = await axios.get(`${BASE_URL}get-incomes`, {
+            headers: {
+                "Authorization": `Bearer ${localStorage.getItem("JB_TOKEN")}`
+            }
+        })
         setIncomes(response.data)
         console.log(response.data)
     }
 
+    const getGoals = async () => {
+        const response = await axios.get(`${BASE_URL}get-incomes`, {
+            headers: {
+                "Authorization": `Bearer ${localStorage.getItem("JB_TOKEN")}`
+            }
+        })
+        setIncomes(response.data)
+        console.log(response.data)
+    }
+
+
     const deleteIncome = async (id) => {
-        const res  = await axios.delete(`${BASE_URL}delete-income/${id}`)
+        const res = await axios.delete(`${BASE_URL}delete-income/${id}`, {
+            headers: {
+                "Authorization": `Bearer ${localStorage.getItem("JB_TOKEN")}`
+            }
+        })
         getIncomes()
     }
 
     const totalIncome = () => {
         let totalIncome = 0;
-        incomes.forEach((income) =>{
+        incomes.forEach((income) => {
             totalIncome = totalIncome + income.amount
         })
 
@@ -47,34 +76,46 @@ export const GlobalProvider = ({children}) => {
 
     //calculate expenses
     const addExpense = async (income) => {
-        const response = await axios.post(`${BASE_URL}add-expense`, income)
-            .catch((err) =>{
+        const response = await axios.post(`${BASE_URL}add-expense`, income, {
+            headers: {
+                "Authorization": `Bearer ${localStorage.getItem("JB_TOKEN")}`
+            }
+        })
+            .catch((err) => {
                 setError(err.response.data.message)
             })
         getExpenses()
     }
 
     const getExpenses = async () => {
-        const response = await axios.get(`${BASE_URL}get-expenses`)
+        const response = await axios.get(`${BASE_URL}get-expenses`, {
+            headers: {
+                "Authorization": `Bearer ${localStorage.getItem("JB_TOKEN")}`
+            }
+        })
         setExpenses(response.data)
         console.log(response.data)
     }
 
     const deleteExpense = async (id) => {
-        const res  = await axios.delete(`${BASE_URL}delete-expense/${id}`)
+        const res = await axios.delete(`${BASE_URL}delete-expense/${id}`, {
+            headers: {
+                "Authorization": `Bearer ${localStorage.getItem("JB_TOKEN")}`
+            }
+        })
         getExpenses()
     }
 
     const totalExpenses = () => {
         let totalIncome = 0;
-        expenses.forEach((income) =>{
+        expenses.forEach((income) => {
             totalIncome = totalIncome + income.amount
         })
 
         return totalIncome;
     }
 
-// Calc of total balance
+    // Calc of total balance
     const totalBalance = () => {
         return totalIncome() - totalExpenses()
     }
@@ -90,27 +131,30 @@ export const GlobalProvider = ({children}) => {
 
 
     return (
-        <GlobalContext.Provider value={{
-            addIncome,
-            getIncomes,
-            incomes,
-            deleteIncome,
-            expenses,
-            totalIncome,
-            addExpense,
-            getExpenses,
-            deleteExpense,
-            totalExpenses,
-            totalBalance,
-            transactionHistory,
-            error,
-            setError
-        }}>
-            {children}
-        </GlobalContext.Provider>
+        <AuthProvider>
+
+            <GlobalContext.Provider value={{
+                addIncome,
+                getIncomes,
+                incomes,
+                deleteIncome,
+                expenses,
+                totalIncome,
+                addExpense,
+                getExpenses,
+                deleteExpense,
+                totalExpenses,
+                totalBalance,
+                transactionHistory,
+                error,
+                setError
+            }}>
+                {children}
+            </GlobalContext.Provider>
+        </AuthProvider>
     )
 }
 
-export const useGlobalContext = () =>{
+export const useGlobalContext = () => {
     return useContext(GlobalContext)
 }

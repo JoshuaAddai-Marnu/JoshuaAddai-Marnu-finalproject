@@ -20,6 +20,8 @@ import Goals from './Components/Goals/Goal';
 import DebtTracker from './Components/DebtTracker.js/Debt';
 import WageCalculator from './Components/WageCalc/WageCalc';
 import Home from './Components/Home/Home';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 
 function App() {
@@ -32,8 +34,11 @@ function App() {
     return <Orb />;
   }, []);
 
+
+
   return (
     <AppStyled bg={bg} className="App">
+      <ToastContainer />
       {orbMemo}
       <MainLayout>
         {!["/signup", "/login"].includes(location.pathname) && <Navigation />}

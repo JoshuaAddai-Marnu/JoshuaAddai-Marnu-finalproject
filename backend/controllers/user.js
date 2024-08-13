@@ -67,7 +67,8 @@ exports.login = async (req, res) => {
 
         res.status(200).json({
             message: 'User successfully created', data: {
-                token
+                token,
+                user: existUser
             }
         })
     } catch (error) {

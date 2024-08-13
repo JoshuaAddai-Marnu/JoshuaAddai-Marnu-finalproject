@@ -1,10 +1,13 @@
 const DebtSchema = require('../models/debtModel');
+const UserSchema = require("../models/userModel")
 
 exports.createDebt = async (req, res) => {
     try {
+        const user = req.user
+        const myProfile = await UserSchema.findOne({ email: user.email })
         const { name, totalAmount } = req.body;
         const debt = new DebtSchema({
-            user: req.user._id,
+            user: myProfile,
             name,
             totalAmount
         });
@@ -18,7 +21,9 @@ exports.createDebt = async (req, res) => {
 
 exports.getUserDebts = async (req, res) => {
     try {
-        const debts = await DebtSchema.find({ user: req.user._id });
+        const user = req.user
+        const myProfile = await UserSchema.findOne({ email: user.email })
+        const debts = await DebtSchema.find({ user: myProfile });
         res.status(200).json(debts);
     } catch (error) {
         res.status(500).json({ error: 'Server Error' });
@@ -29,6 +34,7 @@ exports.updateDebt = async (req, res) => {
     try {
         const { debtId, paymentAmount } = req.body;
         const debt = await DebtSchema.findById(debtId);
+
 
         if (!debt) {
             return res.status(404).json({ error: 'Debt not found' });
@@ -43,15 +49,14 @@ exports.updateDebt = async (req, res) => {
     }
 };
 
-const Debt = require('../models/debtModel'); // Make sure to import the Debt model
 
 exports.deleteDebt = async (req, res) => {
     try {
-        const { debtId } = req.params; // Get the debt ID from the request parameters
-        const userId = req.user._id; // Assuming you have user authentication and can access the user's ID
+        const { debtId } = req.params;
+        const user = req.user
+        const myProfile = await UserSchema.findOne({ email: user.email })
 
-        // Find the debt by ID and ensure it belongs to the logged-in user
-        const debt = await Debt.findOneAndDelete({ _id: debtId, user: userId });
+        const debt = await DebtSchema.findOneAndDelete({ _id: debtId, user: myProfile });
 
         if (!debt) {
             return res.status(404).json({ error: 'Debt not found or you do not have permission to delete this debt' });

@@ -80,25 +80,7 @@ function Expenses() {
                         <div className="form-container">
                             <ExpenseForm />
                         </div>
-                        <ExpensesContainer>
-                            {expenses.map((expense) => {
-                                const { _id, title, amount, date, category, description, type } = expense;
-                                return (
-                                    <IncomeItem
-                                        key={_id}
-                                        id={_id}
-                                        title={title}
-                                        description={description}
-                                        amount={amount}
-                                        date={date}
-                                        type={type}
-                                        category={category}
-                                        indicatorColor="var(--color-green)"
-                                        deleteItem={deleteExpense}
-                                    />
-                                );
-                            })}
-                        </ExpensesContainer>
+
                     </div>
                     <PieChartContainer>
                         <h3>Expense Distribution by Category</h3>
@@ -108,7 +90,27 @@ function Expenses() {
                         </MotivationalMessage>
                     </PieChartContainer>
                 </div>
+                <ExpensesContainer>
+                    {expenses.map((expense) => {
+                        const { _id, title, amount, date, category, description, type } = expense;
+                        return (
+                            <IncomeItem
+                                key={_id}
+                                id={_id}
+                                title={title}
+                                description={description}
+                                amount={amount}
+                                date={date}
+                                type={type}
+                                category={category}
+                                indicatorColor="var(--color-green)"
+                                deleteItem={deleteExpense}
+                            />
+                        );
+                    })}
+                </ExpensesContainer>
             </InnerLayout>
+
         </ExpenseStyled>
     );
 }
@@ -155,6 +157,7 @@ const ExpensesContainer = styled.div`
     flex: 1;
     max-height: 500px; /* You can adjust this height as needed */
     overflow-y: auto;
+    margin-top: 50px;
     padding-right: 1rem; /* To avoid content being hidden behind the scrollbar */
 
     &::-webkit-scrollbar {
@@ -180,7 +183,7 @@ const PieChartContainer = styled.div`
     border-radius: 20px;
     padding: 1rem;
     max-width: 400px;
-    height: 510px; /* Set a fixed height */
+    height: 530px; /* Set a fixed height */
 
     h3 {
         text-align: center;

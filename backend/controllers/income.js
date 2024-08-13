@@ -1,15 +1,21 @@
 const IncomeSchema = require("../models/incomeModel")
+const UserSchema = require("../models/userModel")
+
 
 
 exports.addIncome = async (req, res) => {
     const { title, amount, category, description, date } = req.body
+
+    const user = req.user
+    const myProfile = await UserSchema.findOne({ email: user.email })
 
     const income = IncomeSchema({
         title,
         amount,
         category,
         description,
-        date
+        date,
+        user: myProfile
     })
 
     try {
@@ -33,9 +39,12 @@ exports.addIncome = async (req, res) => {
 
 exports.getIncomes = async (req, res) => {
     try {
-        const incomes = await IncomeSchema.find().sort({ createdAt: -1 })
+        const user = req.user
+        const myProfile = await UserSchema.findOne({ email: user.email })
+        const incomes = await IncomeSchema.find({ user: myProfile }).sort({ createdAt: -1 })
         res.status(200).json(incomes)
     } catch (error) {
+        console.log(error)
         res.status(500).json({ message: 'Server Error' })
     }
 }
