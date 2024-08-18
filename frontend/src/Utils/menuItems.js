@@ -9,7 +9,7 @@ export const menuItems = [
     },
     {
         id: 2,
-        title: 'Money Master (Dashboard)',
+        title: 'Dashboard',
         icon: dashboard,
         link: '/dashboard'
     },
@@ -27,13 +27,13 @@ export const menuItems = [
     },
     {
         id: 5,
-        title: "Future Focus (Goals Tracker)",
+        title: "Goals Tracker",
         icon: goal,
         link: "/goals",
     },
     {
         id: 6,
-        title: " Debt Defender",
+        title: " Debt Tracker",
         icon: loan,
         link: "/debts",
     },
