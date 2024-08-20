@@ -15,7 +15,6 @@ import {
 } from "chart.js";
 import { useGlobalContext } from "../../Context/globalContext";
 import { useInput } from "../../Hooks/useInput";
-import { toast } from "react-toastify";
 import { toaster } from "../../Utils/toaster";
 
 ChartJs.register(
@@ -35,8 +34,7 @@ function DebtTracker() {
     paymentAmount: "",
     paymentDate: "",
   });
-  const { debtName, totalAmount, debtDate, paymentAmount, paymentDate } =
-    inputValues;
+  const { debtName, totalAmount, debtDate, paymentAmount } = inputValues;
 
   const [selectedDebt, setSelectedDebt] = useState("");
   const [editingDebtId, setEditingDebtId] = useState(null);
