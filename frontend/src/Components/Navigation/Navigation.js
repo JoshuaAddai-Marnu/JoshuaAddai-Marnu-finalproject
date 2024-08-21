@@ -1,16 +1,25 @@
-import React from "react";
+import React, { useEffect } from "react";
 import styled from "styled-components";
 import JBB from "../../Img/JBB.png";
 import { signout } from "../../Utils/Icons";
 import { menuItems } from "../../Utils/menuItems";
 import { NavLink, useNavigate } from "react-router-dom";
 import { useAuth } from "../../Context/authContext";
+import { useGlobalContext } from "../../Context/globalContext";
+import { pound } from "../../Utils/Icons";
+import { formatAmount } from "../../Utils/formatAmount";
 
 function Navigation() {
   const { logout } = useAuth();
   const router = useNavigate();
   const userName = localStorage.getItem("JB_NAME");
   const firstName = userName ? userName.split(" ")[0] : "";
+  const { totalIncome, getIncomes } = useGlobalContext();
+  useEffect(() => {
+    getIncomes();
+  }, []);
+
+  const totalIncomeValue = totalIncome();
 
   return (
     <NavStyled>
@@ -19,14 +28,17 @@ function Navigation() {
         <TextContainer>
           <div className="text">
             <h2>Welcome, {firstName}</h2>
-            <p>Your Money</p>
+            <p>
+              {pound}&nbsp;
+              {totalIncomeValue ? formatAmount(totalIncomeValue) : "0"}
+            </p>
           </div>
         </TextContainer>
       </div>
       <ul className="menu-items">
         {menuItems.map((item) => {
           return (
-            <NavLink key={item.id} to={item.link} activeClassName="active">
+            <NavLink key={item.id} to={item.link}>
               {item.icon}
               <span>{item.title}</span>
             </NavLink>
