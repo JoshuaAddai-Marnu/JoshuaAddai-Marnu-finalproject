@@ -15,7 +15,7 @@ exports.createGoal = async (req, res) => {
     });
 
     await goal.save();
-    res.status(201).json(goal);
+    res.status(201).json({ message: "Goal successfully created", goal });
   } catch (error) {
     res.status(500).json({ error: "Server Error" });
   }
@@ -65,7 +65,7 @@ exports.updateGoal = async (req, res) => {
     goal.contributedAmount += parseFloat(contributedAmount);
 
     await goal.save();
-    res.status(200).json(goal);
+    res.status(200).json({ message: "Goal successfully updated", goal });
   } catch (error) {
     res.status(500).json({ error: "Server Error" });
   }

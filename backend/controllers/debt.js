@@ -13,7 +13,7 @@ exports.createDebt = async (req, res) => {
     });
 
     await debt.save();
-    res.status(201).json(debt);
+    res.status(201).json({ message: "Debt successfully created", debt });
   } catch (error) {
     res.status(500).json({ error: "Server Error" });
   }
@@ -43,7 +43,7 @@ exports.updateDebt = async (req, res) => {
     debt.paidAmount += parseFloat(paymentAmount);
     await debt.save();
 
-    res.status(200).json(debt);
+    res.status(200).json({ message: "Debt successfully updated", debt });
   } catch (error) {
     res.status(500).json({ error: "Server Error" });
   }
@@ -61,12 +61,10 @@ exports.deleteDebt = async (req, res) => {
     });
 
     if (!debt) {
-      return res
-        .status(404)
-        .json({
-          error:
-            "Debt not found or you do not have permission to delete this debt",
-        });
+      return res.status(404).json({
+        error:
+          "Debt not found or you do not have permission to delete this debt",
+      });
     }
 
     res.status(200).json({ message: "Debt successfully deleted" });
