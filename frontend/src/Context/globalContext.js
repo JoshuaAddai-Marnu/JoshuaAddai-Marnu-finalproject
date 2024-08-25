@@ -13,6 +13,7 @@ export const GlobalProvider = ({ children }) => {
     expenses: [],
     debts: [],
     goals: [],
+    categories: [],
     error: null,
   });
 
@@ -21,50 +22,64 @@ export const GlobalProvider = ({ children }) => {
   };
 
   const handleError = (err) => {
-    toast("error", err.response?.data?.message || "An error occurred", {
+    toast(err.response?.data?.message || "An error occurred", {
       type: "error",
     });
   };
 
   const createApiHandler = (endpoints, stateKey) => {
     const handler = {
-      add: async (item) => {
+      add: async (item, query) => {
         try {
-          await apiClient.post(`${BASE_URL}${endpoints.add}`, item);
-          await handler.get();
+          await apiClient
+            .post(`${BASE_URL}${endpoints.add}`, item)
+            .then((res) => toast(res?.data?.message, { type: "success" }));
+          const response = await handler.get(query);
+
+          return { success: true, data: response };
         } catch (err) {
           handleError(err);
+          return { success: false, error: err };
         }
       },
-      get: async () => {
+      get: async (query) => {
         try {
-          const response = await apiClient.get(`${BASE_URL}${endpoints.get}`);
+          const response = await apiClient.get(
+            `${BASE_URL}${endpoints.get}${query ? `?${query}` : ""}`
+          );
           if (response) {
             updateState(stateKey, response.data);
           }
+          return { success: true, data: response };
         } catch (err) {
           handleError(err);
+          return { success: false, error: err };
         }
       },
       delete: async (id) => {
         try {
-          await apiClient.delete(
-            `${BASE_URL}${endpoints.delete.replace(":id", id)}`
-          );
-          await handler.get();
+          await apiClient
+            .delete(`${BASE_URL}${endpoints.delete.replace(":id", id)}`)
+            .then((res) => toast(res?.data?.message, { type: "success" }));
+
+          const response = await handler.get();
+          return { success: true, data: response };
         } catch (err) {
           handleError(err);
+          return { success: false, error: err };
         }
       },
       update: async (id, data) => {
         try {
-          await apiClient.put(
-            `${BASE_URL}${endpoints.update.replace(":id", id)}`,
-            data
-          );
-          await handler.get();
+          await apiClient
+            .put(`${BASE_URL}${endpoints.update.replace(":id", id)}`, data)
+            .then((res) => toast(res?.data?.message, { type: "success" }));
+
+          const response = await handler.get();
+          return { success: true, data: response };
         } catch (err) {
           handleError(err);
+          return { success: false, error: err };
         }
       },
     };
@@ -109,6 +124,14 @@ export const GlobalProvider = ({ children }) => {
     "goals"
   );
 
+  const categoriesHandler = createApiHandler(
+    {
+      add: "categories",
+      get: "categories",
+    },
+    "categories"
+  );
+
   // Recreating previous functions using new handlers
   const addIncome = incomeHandler.add;
   const getIncomes = incomeHandler.get;
@@ -127,6 +150,9 @@ export const GlobalProvider = ({ children }) => {
   const getGoals = goalHandler.get;
   const updateGoal = goalHandler.update;
   const deleteGoal = goalHandler.delete;
+
+  const addCategories = categoriesHandler.add;
+  const getCategories = categoriesHandler.get;
 
   const calculateTotal = (items) => {
     return items.reduce((total, item) => total + item.amount, 0);
@@ -167,6 +193,8 @@ export const GlobalProvider = ({ children }) => {
           totalIncome,
           totalExpenses,
           totalBalance,
+          addCategories,
+          getCategories,
           transactionHistory,
           setError: (error) => updateState("error", error),
         }}
