@@ -69,10 +69,11 @@ function Goals() {
       });
     } else {
       await updateGoal(editingGoalId, { name: goalName, targetAmount }).then(
-        () => {
-          resetInputVlues();
-          updateInputValues("editingGoalId", null);
-          toaster.success("Successfully updated goal");
+        (res) => {
+          if (res.success) {
+            resetInputVlues();
+            updateInputValues("editingGoalId", null);
+          }
         }
       );
     }

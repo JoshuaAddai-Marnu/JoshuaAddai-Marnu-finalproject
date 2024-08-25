@@ -65,10 +65,11 @@ function DebtTracker() {
       });
     } else {
       await updateDebt(editingDebtId, { name: debtName, totalAmount }).then(
-        () => {
-          resetInputVlues();
-          setEditingDebtId(null);
-          toaster.success("Successfully updated debt");
+        (res) => {
+          if (res.success) {
+            resetInputVlues();
+            setEditingDebtId(null);
+          }
         }
       );
     }
@@ -99,10 +100,11 @@ function DebtTracker() {
         );
         return;
       }
-      await updateDebt(foundDebt?._id, { paymentAmount }).then(() => {
-        toaster.success("Payment successfully recorded.");
-        setSelectedDebt("");
-        resetInputVlues();
+      await updateDebt(foundDebt?._id, { paymentAmount }).then((res) => {
+        if (res.success) {
+          setSelectedDebt("");
+          resetInputVlues();
+        }
       });
     }
   };
