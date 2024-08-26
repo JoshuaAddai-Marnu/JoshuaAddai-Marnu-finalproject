@@ -20,8 +20,6 @@ exports.createGoal = async (req, res) => {
       user: myProfile,
       date: goalDate,
     });
-    console.log("body", { name, targetAmount });
-    console.log("goal", goal);
 
     await goal.save();
     res.status(201).json({ message: "Goal successfully created", goal });
@@ -89,8 +87,6 @@ exports.updateGoal = async (req, res) => {
       goal.contributedAmount += contributedAmountNum;
     }
     goal.date = goalDate;
-
-    console.log(goal);
 
     await goal.save();
     res.status(200).json({ message: "Goal successfully updated", goal });
@@ -184,7 +180,6 @@ exports.updateContribution = async (req, res) => {
 exports.deleteContribution = async (req, res) => {
   try {
     const { goalId, contributionId } = req.params;
-
     const goal = await GoalSchema.findById(goalId);
 
     if (!goal) {
