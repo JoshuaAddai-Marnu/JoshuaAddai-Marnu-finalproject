@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import styled, { keyframes } from "styled-components";
 import { InnerLayout } from "../../Styles/Layouts";
 import Button from "../Button/Button";
-import { plus, circle } from "../../Utils/Icons";
+import { plus, circle, trash } from "../../Utils/Icons";
 import { Bar } from "react-chartjs-2";
 import {
   Chart as ChartJs,
@@ -16,6 +16,7 @@ import {
 
 import { useInput } from "../../Hooks/useInput";
 import { toaster } from "../../Utils/toaster";
+import { apiClient } from "../../Utils/apiClient";
 import { useGlobalContext } from "../../Context/globalContext";
 ChartJs.register(
   CategoryScale,
@@ -25,6 +26,8 @@ ChartJs.register(
   Tooltip,
   Legend
 );
+
+const BASE_URL = "http://localhost:3001/api/v1/";
 
 function Goals() {
   const { inputValues, resetInputVlues, updateInputValues } = useInput({
@@ -43,6 +46,7 @@ function Goals() {
   useEffect(() => {
     getGoals();
   }, []);
+
   const {
     goalName,
     targetAmount,
@@ -53,76 +57,111 @@ function Goals() {
     contributionDate,
   } = inputValues;
 
-  // Function to add or edit a goal
+  const addContribution = async (goalId, contributionData) => {
+    await apiClient
+      .post(`${BASE_URL}goals/${goalId}/contributions`, contributionData)
+      .then((res) => {
+        resetInputVlues();
+        getGoals();
+        toaster.success(res?.data?.message || "An error occurred");
+      })
+      .catch((err) => {
+        toaster.error(err.response?.data?.message || "An error occurred");
+      });
+  };
+
+  const deleteContribution = async (goalId, contributionId) => {
+    await apiClient
+      .delete(`${BASE_URL}goals/${goalId}/contributions/${contributionId}`)
+      .then((res) => {
+        getGoals();
+        toaster.success(res?.data?.message || "An error occurred");
+      })
+      .catch((err) =>
+        toaster.error(err.response?.data?.message || "An error occurred")
+      );
+  };
+
   const addOrEditGoal = async (e) => {
     e.preventDefault();
 
-    if (!goalName || !targetAmount || parseFloat(targetAmount) <= 0) {
-      toaster.error("Please enter a valid goal name, target amount");
+    if (
+      !goalName ||
+      !targetAmount ||
+      parseFloat(targetAmount) <= 0 ||
+      !goalDate
+    ) {
+      toaster.error(
+        "Please enter a valid goal name, target amount and goal date"
+      );
       return;
     }
 
+    const goalData = {
+      name: goalName,
+      targetAmount,
+      goalDate,
+    };
     if (!editingGoalId) {
-      await addGoal({ name: goalName, targetAmount }).then(() => {
-        resetInputVlues();
-        toaster.success("Successfully created goal");
+      await addGoal(goalData).then((res) => {
+        if (res.success) {
+          resetInputVlues();
+        }
       });
     } else {
-      await updateGoal(editingGoalId, { name: goalName, targetAmount }).then(
-        (res) => {
-          if (res.success) {
-            resetInputVlues();
-            updateInputValues("editingGoalId", null);
-          }
+      await updateGoal(editingGoalId, goalData).then((res) => {
+        if (res.success) {
+          resetInputVlues();
+          updateInputValues("editingGoalId", null);
         }
-      );
+      });
     }
   };
 
-  // Function to delete a goal
   const deleteGoalWithId = async (id) => {
-    await deleteGoal(id).then(() =>
-      toaster.success("Successfully deleted goal")
-    );
+    await deleteGoal(id);
   };
 
-  // Function to edit a goal
-  const startEditingGoal = (id) => {
-    const goalToEdit = goals.find((goal) => goal.id === id);
-    updateInputValues("goalName", goalToEdit.name);
-    updateInputValues("targetAmount", goalToEdit.targetAmount.toString());
-
-    updateInputValues("editingGoalId", id);
+  const startEditingGoal = (goal) => {
+    updateInputValues("goalName", goal.name);
+    updateInputValues("targetAmount", goal.targetAmount.toString());
+    const formattedDate = goal.date.slice(0, 10);
+    updateInputValues("goalDate", formattedDate);
+    updateInputValues("editingGoalId", goal._id);
   };
 
-  // Function to contribute to a goal
   const contributeToGoal = async (e) => {
     e.preventDefault();
 
-    if (!selectedGoal || !contribution || parseFloat(contribution) <= 0) {
-      toaster.error("Please select a debt, enter a valid payment amount.");
+    if (
+      !selectedGoal ||
+      !contribution ||
+      parseFloat(contribution) <= 0 ||
+      !contributionDate
+    ) {
+      toaster.error(
+        "Please select a goal, enter a valid contribution amount, and date."
+      );
       return;
     }
 
-    if (selectedGoal) {
-      const foundGoal = goals.find((debt) => debt._id === selectedGoal);
-      if (foundGoal?.targetAmount < parseFloat(contribution)) {
-        toaster.error(
-          "Contribution amount cannot be greater than total goal amount."
-        );
-        return;
-      }
-      await updateGoal(foundGoal?._id, {
-        contributedAMount: contribution,
-      }).then(() => {
-        toaster.success("Contribution successfully recorded.");
-        resetInputVlues();
-      });
+    const foundGoal = goals.find((goal) => goal._id === selectedGoal);
+    if (foundGoal?.targetAmount < parseFloat(contribution)) {
+      toaster.error(
+        "Contribution amount cannot be greater than remaining goal amount."
+      );
+      return;
     }
+
+    await addContribution(selectedGoal, {
+      amount: parseFloat(contribution),
+      contributionDate,
+    });
   };
 
-  // Function to toggle the visibility of contribution details
-  const toggleContributions = async (e) => {};
+  const deleteContributionFromGoal = async (goalId, contributionId) => {
+    await deleteContribution(goalId, contributionId);
+  };
 
   const handleInput = (name) => (e) => {
     updateInputValues(name, e.target.value);
@@ -223,7 +262,7 @@ function Goals() {
                 <p>No goals added yet.</p>
               ) : (
                 goals.map((goal) => (
-                  <GoalItem key={goal.id} className="goal-item">
+                  <GoalItem key={goal._id} className="goal-item">
                     <h3>{goal.name}</h3>
                     <p>Target: £{goal.targetAmount.toFixed(2)}</p>
                     <p>Contributed: £{goal.contributedAmount.toFixed(2)}</p>
@@ -239,7 +278,11 @@ function Goals() {
                       ).toFixed(2)}
                       %
                     </p>
-                    <p>Date Added: {goal.dateAdded}</p>
+                    <p>
+                      Date Added:{" "}
+                      {new Date(goal.createdAt).toLocaleDateString()}
+                    </p>
+                    <p>Goal Date: {new Date(goal.date).toLocaleDateString()}</p>
                     <ButtonContainer>
                       <Button
                         name="Edit"
@@ -248,11 +291,11 @@ function Goals() {
                         bRad={"20px"}
                         bg={"#f0ad4e"}
                         color={"#fff"}
-                        onClick={() => startEditingGoal(goal.id)}
+                        onClick={() => startEditingGoal(goal)}
                       />
                       <Button
                         name="Delete"
-                        icon={circle}
+                        icon={trash}
                         bPad={".4rem 1rem"}
                         bRad={"20px"}
                         bg={"#d9534f"}
@@ -260,21 +303,25 @@ function Goals() {
                         onClick={() => deleteGoalWithId(goal._id)}
                       />
                     </ButtonContainer>
-                    <ToggleContributionsButton
-                      onClick={() => toggleContributions(goal.id)}
-                    >
-                      {goal.showContributions
-                        ? "Hide Contribution Details"
-                        : "Show Contribution Details"}
-                    </ToggleContributionsButton>
-                    {goal.showContributions &&
-                      goal.contributions.map((contribution, index) => (
-                        <ContributionDetail key={index}>
-                          {index + 1}. Contribution of £
-                          {contribution.amount.toFixed(2)} on{" "}
-                          {contribution.date}
-                        </ContributionDetail>
+                    <ContributionsList>
+                      <h4>Contributions:</h4>
+                      {goal.contributions.map((contribution) => (
+                        <ContributionItem key={contribution._id}>
+                          £{contribution.amount.toFixed(2)} on{" "}
+                          {new Date(contribution.date).toLocaleDateString()}
+                          <DeleteContributionButton
+                            onClick={() =>
+                              deleteContributionFromGoal(
+                                goal._id,
+                                contribution._id
+                              )
+                            }
+                          >
+                            {trash}
+                          </DeleteContributionButton>
+                        </ContributionItem>
                       ))}
+                    </ContributionsList>
                     <BarChart
                       progress={
                         (goal.contributedAmount / goal.targetAmount) * 100
@@ -442,37 +489,26 @@ const ButtonContainer = styled.div`
   margin-top: 1rem;
 `;
 
-const ToggleContributionsButton = styled.button`
-  background-color: #4caf50;
-  color: #fff;
-  padding: 0.5rem 1rem;
-  margin-top: 0.5rem;
+const ContributionsList = styled.div`
+  margin-top: 1rem;
+  width: 100%;
+`;
+
+const ContributionItem = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+`;
+
+const DeleteContributionButton = styled.button`
+  background: none;
   border: none;
-  border-radius: 5px;
+  color: #d9534f;
   cursor: pointer;
-  transition: background-color 0.3s ease;
-
-  &:hover {
-    background-color: #45a049;
-  }
-`;
-
-const ContributionDetail = styled.div`
-  font-size: 0.9rem;
-  color: #666;
-  margin-top: 0.25rem;
-`;
-
-const ErrorMessage = styled.div`
-  color: red;
   font-size: 1rem;
-  margin-bottom: 1rem;
-`;
-
-const SuccessMessage = styled.div`
-  color: green;
-  font-size: 1rem;
-  margin-bottom: 1rem;
+  padding: 0;
+  margin-left: 0.5rem;
 `;
 
 const BarChart = ({ progress }) => {
