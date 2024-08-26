@@ -19,7 +19,7 @@ router.post('/add-income', authenticateJWT, addIncome)
 
         // Debt Routes
         .post('/add-debt', authenticateJWT, createDebt)
-        .get('/get-debt', authenticateJWT, getUserDebts)
+        .get('/get-debts', authenticateJWT, getUserDebts)
         .put('/update-debt/:id', authenticateJWT, updateDebt)
         .delete('/delete-debt/:id', authenticateJWT, deleteDebt)
 
