@@ -34,6 +34,46 @@ exports.addIncome = async (req, res) => {
   }
 };
 
+exports.updateIncome = async (req, res) => {
+  const { id } = req.params;
+  const { title, amount, category, description, date } = req.body;
+
+  try {
+    const user = req.user;
+    const myProfile = await UserSchema.findOne({ email: user.email });
+
+    const income = await IncomeSchema.findOne({ _id: id, user: myProfile });
+
+    if (!income) {
+      return res.status(404).json({ message: "Income not found" });
+    }
+
+    // Validations
+    if (!title || !category || !description || !date) {
+      return res.status(400).json({ message: "All fields are required!" });
+    }
+    if (amount <= 0 || typeof amount !== "number") {
+      return res
+        .status(400)
+        .json({ message: "Amount must be a positive number!" });
+    }
+
+    // Update fields
+    income.title = title || income.title;
+    income.amount = amount || income.amount;
+    income.category = category || income.category;
+    income.description = description || income.description;
+    income.date = date || income.date;
+
+    await income.save();
+
+    res.status(200).json({ message: "Income successfully updated", income });
+  } catch (error) {
+    console.error("Error updating income:", error);
+    res.status(500).json({ message: "Server Error" });
+  }
+};
+
 exports.getIncomes = async (req, res) => {
   try {
     const user = req.user;
