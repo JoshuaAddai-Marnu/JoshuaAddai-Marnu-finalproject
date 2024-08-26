@@ -34,9 +34,11 @@ export const GlobalProvider = ({ children }) => {
           await apiClient
             .post(`${BASE_URL}${endpoints.add}`, item)
             .then((res) => toast(res?.data?.message, { type: "success" }));
-          const response = await handler.get(query);
+          if (handler.get) {
+            const response = await handler.get(query);
 
-          return { success: true, data: response };
+            return { success: true, data: response };
+          }
         } catch (err) {
           handleError(err);
           return { success: false, error: err };
@@ -56,14 +58,17 @@ export const GlobalProvider = ({ children }) => {
           return { success: false, error: err };
         }
       },
-      delete: async (id) => {
+      delete: async (id, childId) => {
         try {
           await apiClient
             .delete(`${BASE_URL}${endpoints.delete.replace(":id", id)}`)
             .then((res) => toast(res?.data?.message, { type: "success" }));
 
-          const response = await handler.get();
-          return { success: true, data: response };
+          if (handler.get) {
+            const response = await handler.get();
+
+            return { success: true, data: response };
+          }
         } catch (err) {
           handleError(err);
           return { success: false, error: err };
@@ -75,8 +80,11 @@ export const GlobalProvider = ({ children }) => {
             .put(`${BASE_URL}${endpoints.update.replace(":id", id)}`, data)
             .then((res) => toast(res?.data?.message, { type: "success" }));
 
-          const response = await handler.get();
-          return { success: true, data: response };
+          if (handler.get) {
+            const response = await handler.get();
+
+            return { success: true, data: response };
+          }
         } catch (err) {
           handleError(err);
           return { success: false, error: err };
