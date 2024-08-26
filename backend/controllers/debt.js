@@ -5,12 +5,13 @@ exports.createDebt = async (req, res) => {
   try {
     const user = req.user;
     const myProfile = await UserSchema.findOne({ email: user.email });
-    const { name, totalAmount } = req.body;
+    const { name, totalAmount, debtDate } = req.body;
     const debt = new DebtSchema({
       user: myProfile,
       name,
       totalAmount,
       payments: [],
+      date: debtDate,
     });
 
     await debt.save();

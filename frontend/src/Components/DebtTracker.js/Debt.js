@@ -17,6 +17,7 @@ import { useGlobalContext } from "../../Context/globalContext";
 import { useInput } from "../../Hooks/useInput";
 import { toaster } from "../../Utils/toaster";
 import { apiClient } from "../../Utils/apiClient";
+import { formatAmount } from "../../Utils/formatAmount";
 
 ChartJs.register(
   CategoryScale,
@@ -90,19 +91,22 @@ function DebtTracker() {
       return;
     }
     if (!editingDebtId) {
-      await addDebt({ name: debtName, totalAmount }).then(() => {
-        resetInputVlues();
-        toaster.success("Successfully created debt");
+      await addDebt({ name: debtName, totalAmount, debtDate }).then((res) => {
+        if (res.success) {
+          resetInputVlues();
+        }
       });
     } else {
-      await updateDebt(editingDebtId, { name: debtName, totalAmount }).then(
-        (res) => {
-          if (res.success) {
-            resetInputVlues();
-            setEditingDebtId(null);
-          }
+      await updateDebt(editingDebtId, {
+        name: debtName,
+        totalAmount,
+        debtDate,
+      }).then((res) => {
+        if (res.success) {
+          resetInputVlues();
+          setEditingDebtId(null);
         }
-      );
+      });
     }
   };
 
@@ -252,17 +256,24 @@ function DebtTracker() {
                 debts.map((debt) => (
                   <DebtItem key={debt._id} className="debt-item">
                     <h3>{debt.name}</h3>
-                    <p>Total: £{debt.totalAmount.toFixed(2)}</p>
+                    <p>Total: £{formatAmount(debt.totalAmount.toFixed(2))}</p>
                     <p>Paid: £{debt.paidAmount.toFixed(2)}</p>
                     <p>
                       Remaining: £
-                      {(debt.totalAmount - debt.paidAmount).toFixed(2)}
+                      {formatAmount(
+                        (debt.totalAmount - debt.paidAmount).toFixed(2)
+                      )}
                     </p>
                     <p>
                       Progress:{" "}
-                      {((debt.paidAmount / debt.totalAmount) * 100).toFixed(2)}%
+                      {formatAmount(
+                        ((debt.paidAmount / debt.totalAmount) * 100).toFixed(2)
+                      )}
+                      %
                     </p>
-                    <p>Date Added: {debt.dateAdded}</p>
+                    <p>
+                      Date Added: {new Date(debt.date).toLocaleDateString()}
+                    </p>
                     <ButtonContainer>
                       <Button
                         name="Edit"
@@ -287,20 +298,20 @@ function DebtTracker() {
                         }}
                       />
                     </ButtonContainer>
-                    <TogglePaymentsButton
+                    {/* <TogglePaymentsButton
                       onClick={() => togglePayments(debt._id)}
                     >
                       {debt.showPayments
                         ? "Hide Payment Details"
                         : "Show Payment Details"}
-                    </TogglePaymentsButton>
+                    </TogglePaymentsButton> */}
 
                     <PaymentsList>
                       {debt.payments && debt.payments.length > 0 ? (
-                        debt.payments.map((payment) => (
+                        debt.payments.map((payment, i) => (
                           <PaymentDetail key={payment._id}>
-                            Payment of £{payment.amount.toFixed(2)} on{" "}
-                            {new Date(payment.date).toLocaleDateString()}
+                            {i + 1}. £{formatAmount(payment.amount.toFixed(2))}{" "}
+                            on {new Date(payment.date).toLocaleDateString()}
                             <DeletePaymentButton
                               onClick={() =>
                                 deletePayment(debt._id, payment._id)

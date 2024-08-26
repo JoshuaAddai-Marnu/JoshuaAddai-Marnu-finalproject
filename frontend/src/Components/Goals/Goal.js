@@ -17,6 +17,7 @@ import {
 import { useInput } from "../../Hooks/useInput";
 import { toaster } from "../../Utils/toaster";
 import { apiClient } from "../../Utils/apiClient";
+import { formatAmount } from "../../Utils/formatAmount";
 import { useGlobalContext } from "../../Context/globalContext";
 ChartJs.register(
   CategoryScale,
@@ -305,9 +306,10 @@ function Goals() {
                     </ButtonContainer>
                     <ContributionsList>
                       <h4>Contributions:</h4>
-                      {goal.contributions.map((contribution) => (
+                      {goal.contributions.map((contribution, i) => (
                         <ContributionItem key={contribution._id}>
-                          £{contribution.amount.toFixed(2)} on{" "}
+                          {i + 1}. £
+                          {formatAmount(contribution.amount.toFixed(2))} on{" "}
                           {new Date(contribution.date).toLocaleDateString()}
                           <DeleteContributionButton
                             onClick={() =>
