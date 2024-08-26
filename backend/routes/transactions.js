@@ -15,6 +15,9 @@ const {
   getUserDebts,
   updateDebt,
   deleteDebt,
+  addPayment,
+  updatePayment,
+  deletePayment,
 } = require("../controllers/debt");
 const {
   createGoal,
@@ -50,6 +53,9 @@ router
   .get("/get-debt", authenticateJWT, getUserDebts)
   .put("/update-debt/:id", authenticateJWT, updateDebt)
   .delete("/delete-debt/:id", authenticateJWT, deleteDebt)
+  .post("/debt/:id/payments", addPayment)
+  .put("/debt/:debtId/payments/:paymentId", authenticateJWT, updatePayment)
+  .delete("/debt/:debtId/payments/:paymentId", authenticateJWT, deletePayment)
 
   // Goal Routes
   .post("/goals", authenticateJWT, createGoal) // Create a new goal

@@ -1,44 +1,53 @@
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 
-const DebtSchema = new mongoose.Schema({
+const DebtSchema = new mongoose.Schema(
+  {
     user: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'User',
-        required: true
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
     },
     name: {
-        type: String,
-        required: true,
-        trim: true,
-        maxLength: 100
+      type: String,
+      required: true,
+      trim: true,
+      maxLength: 100,
     },
     totalAmount: {
-        type: Number,
-        required: true,
-        min: 0
+      type: Number,
+      required: true,
+      min: 0,
     },
     paidAmount: {
-        type: Number,
-        required: true,
-        default: 0,
-        min: 0
+      type: Number,
+      required: true,
+      default: 0,
+      min: 0,
+    },
+    date: {
+      type: Date,
     },
     createdAt: {
-        type: Date,
-        default: Date.now
+      type: Date,
+      default: Date.now,
     },
-    user: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'User',
-        required: true
-    }
 
-}, {
-    timestamps: true
-});
+    payments: [
+      {
+        amount: Number,
+        date: {
+          type: Date,
+        },
+      },
+    ],
+  },
+  {
+    timestamps: true,
+  }
+);
 
 DebtSchema.methods.remainingAmount = function () {
-    return this.totalAmount - this.paidAmount;
+  return this.totalAmount - this.paidAmount;
 };
 
-module.exports = mongoose.model('Debt', DebtSchema);
+module.exports = mongoose.model("Debt", DebtSchema);

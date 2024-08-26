@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import styled, { keyframes } from "styled-components";
 import { InnerLayout } from "../../Styles/Layouts";
 import Button from "../Button/Button";
-import { plus, circle } from "../../Utils/Icons";
+import { plus, circle, trash } from "../../Utils/Icons";
 import { Bar } from "react-chartjs-2";
 import {
   Chart as ChartJs,
@@ -16,6 +16,7 @@ import {
 import { useGlobalContext } from "../../Context/globalContext";
 import { useInput } from "../../Hooks/useInput";
 import { toaster } from "../../Utils/toaster";
+import { apiClient } from "../../Utils/apiClient";
 
 ChartJs.register(
   CategoryScale,
@@ -26,6 +27,8 @@ ChartJs.register(
   Legend
 );
 
+const BASE_URL = "http://localhost:3001/api/v1/";
+
 function DebtTracker() {
   const { inputValues, resetInputVlues, updateInputValues } = useInput({
     debtName: "",
@@ -34,7 +37,10 @@ function DebtTracker() {
     paymentAmount: "",
     paymentDate: "",
   });
-  const { debtName, totalAmount, debtDate, paymentAmount } = inputValues;
+  const { debtName, totalAmount, debtDate, paymentAmount, paymentDate } =
+    inputValues;
+
+  // const [debts, setDebts] = useState([])
 
   const [selectedDebt, setSelectedDebt] = useState("");
   const [editingDebtId, setEditingDebtId] = useState(null);
@@ -45,6 +51,31 @@ function DebtTracker() {
   useEffect(() => {
     getDebts();
   }, []);
+
+  const addPayment = async (debtId, paymentData) => {
+    await apiClient
+      .post(`${BASE_URL}debt/${debtId}/payments`, paymentData)
+      .then((res) => {
+        resetInputVlues();
+        getDebts();
+        toaster.success(res?.data?.message || "An error occurred");
+      })
+      .catch((err) => {
+        toaster.error(err.response?.data?.message || "An error occurred");
+      });
+  };
+
+  const deletePayment = async (debtId, paymentId) => {
+    await apiClient
+      .delete(`${BASE_URL}debt/${debtId}/payments/${paymentId}`)
+      .then((res) => {
+        getDebts();
+        toaster.success(res?.data?.message || "An error occurred");
+      })
+      .catch((err) =>
+        toaster.error(err.response?.data?.message || "An error occurred")
+      );
+  };
 
   const handleInput = (name) => (e) => {
     updateInputValues(name, e.target.value);
@@ -80,15 +111,23 @@ function DebtTracker() {
     const debtToEdit = debts.find((debt) => debt._id === id);
     updateInputValues("debtName", debtToEdit.name);
     updateInputValues("totalAmount", debtToEdit.totalAmount.toString());
-    updateInputValues("debtDate", debtToEdit.dateAdded);
+    const formattedDate = debtToEdit.date.slice(0, 10);
+    updateInputValues("debtDate", formattedDate);
     setEditingDebtId(id);
   };
 
   const makePayment = async (e) => {
     e.preventDefault();
 
-    if (!selectedDebt || !paymentAmount || parseFloat(paymentAmount) <= 0) {
-      toaster.error("Please select a debt, enter a valid payment amount.");
+    if (
+      !selectedDebt ||
+      !paymentAmount ||
+      parseFloat(paymentAmount) <= 0 ||
+      !paymentDate
+    ) {
+      toaster.error(
+        "Please select a debt, enter a valid payment amount, and payment date."
+      );
       return;
     }
 
@@ -100,16 +139,21 @@ function DebtTracker() {
         );
         return;
       }
-      await updateDebt(foundDebt?._id, { paymentAmount }).then((res) => {
-        if (res.success) {
-          setSelectedDebt("");
-          resetInputVlues();
-        }
+
+      await addPayment(selectedDebt, {
+        amount: parseFloat(paymentAmount),
+        paymentDate,
       });
     }
   };
 
-  const togglePayments = (id) => {};
+  const togglePayments = (id) => {
+    // setDebts(
+    //   debts.map((debt) =>
+    //     debt._id === id ? { ...debt, showPayments: !debt.showPayments } : debt
+    //   )
+    // );
+  };
 
   return (
     <DebtTrackerStyled>
@@ -121,10 +165,7 @@ function DebtTracker() {
               <h2>
                 {plus} {editingDebtId ? "Edit Debt" : "Add New Debt"}
               </h2>
-              {/* {errorMessage && <ErrorMessage>{errorMessage}</ErrorMessage>}
-              {successMessage && (
-                <SuccessMessage>{successMessage}</SuccessMessage>
-              )} */}
+
               <input
                 type="text"
                 placeholder="Debt Name"
@@ -142,13 +183,13 @@ function DebtTracker() {
                 required
                 aria-label="Total Amount in Pounds"
               />
-              {/* <input
+              <input
                 type="date"
                 value={debtDate}
                 onChange={handleInput("debtDate")}
                 // required
                 aria-label="Debt Date"
-              /> */}
+              />
               <Button
                 name={editingDebtId ? "Update" : "Add"}
                 icon={plus}
@@ -183,13 +224,13 @@ function DebtTracker() {
                 required
                 aria-label="Payment Amount in Pounds"
               />
-              {/* <input
+              <input
                 type="date"
                 value={paymentDate}
-                onChange={handleInput(paymentDate)}
+                onChange={handleInput("paymentDate")}
                 required
                 aria-label="Payment Date"
-              /> */}
+              />
               <Button
                 name={"Pay"}
                 icon={plus}
@@ -247,19 +288,33 @@ function DebtTracker() {
                       />
                     </ButtonContainer>
                     <TogglePaymentsButton
-                      onClick={() => togglePayments(debt.id)}
+                      onClick={() => togglePayments(debt._id)}
                     >
                       {debt.showPayments
                         ? "Hide Payment Details"
                         : "Show Payment Details"}
                     </TogglePaymentsButton>
-                    {debt.showPayments &&
-                      debt.payments.map((payment, index) => (
-                        <PaymentDetail key={index}>
-                          {index + 1}. Payment of £{payment.amount.toFixed(2)}{" "}
-                          on {payment.date}
-                        </PaymentDetail>
-                      ))}
+
+                    <PaymentsList>
+                      {debt.payments && debt.payments.length > 0 ? (
+                        debt.payments.map((payment) => (
+                          <PaymentDetail key={payment._id}>
+                            Payment of £{payment.amount.toFixed(2)} on{" "}
+                            {new Date(payment.date).toLocaleDateString()}
+                            <DeletePaymentButton
+                              onClick={() =>
+                                deletePayment(debt._id, payment._id)
+                              }
+                            >
+                              {trash}
+                            </DeletePaymentButton>
+                          </PaymentDetail>
+                        ))
+                      ) : (
+                        <p>No payments made yet.</p>
+                      )}
+                    </PaymentsList>
+
                     <BarChart
                       progress={(debt.paidAmount / debt.totalAmount) * 100}
                     />
@@ -284,6 +339,28 @@ const fadeIn = keyframes`
         opacity: 1;
         transform: translateY(0);
     }
+`;
+
+const PaymentsList = styled.div`
+  margin-top: 1rem;
+  width: 100%;
+`;
+
+const PaymentDetail = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+`;
+
+const DeletePaymentButton = styled.button`
+  background: none;
+  border: none;
+  color: #d9534f;
+  cursor: pointer;
+  font-size: 1rem;
+  padding: 0;
+  margin-left: 0.5rem;
 `;
 
 const DebtTrackerStyled = styled.div`
@@ -437,24 +514,6 @@ const TogglePaymentsButton = styled.button`
   &:hover {
     background-color: #45a049;
   }
-`;
-
-const PaymentDetail = styled.div`
-  font-size: 0.9rem;
-  color: #666;
-  margin-top: 0.25rem;
-`;
-
-const ErrorMessage = styled.div`
-  color: red;
-  font-size: 1rem;
-  margin-bottom: 1rem;
-`;
-
-const SuccessMessage = styled.div`
-  color: green;
-  font-size: 1rem;
-  margin-bottom: 1rem;
 `;
 
 const BarChart = ({ progress }) => {
