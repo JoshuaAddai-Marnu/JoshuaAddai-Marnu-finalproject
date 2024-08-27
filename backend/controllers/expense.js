@@ -50,7 +50,13 @@ exports.updateExpense = async (req, res) => {
     if (!title || !category || !description || !date) {
       return res.status(400).json({ message: "All fields are required!" });
     }
-    if (amount <= 0 || typeof amount !== "number") {
+  
+    let amountvalue = 0
+    if(typeof(amount) == "string"){
+      amountvalue = parseFloat(amount)
+    }
+    // const amount = parseFloat(amount);
+    if (amountvalue <= 0 || typeof amountvalue !== "number") {
       return res
         .status(400)
         .json({ message: "Amount must be a positive number!" });

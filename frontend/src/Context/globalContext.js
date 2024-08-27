@@ -75,6 +75,7 @@ export const GlobalProvider = ({ children }) => {
         }
       },
       update: async (id, data) => {
+        console.log(id, data);
         try {
           await apiClient
             .put(`${BASE_URL}${endpoints.update.replace(":id", id)}`, data)
@@ -82,7 +83,6 @@ export const GlobalProvider = ({ children }) => {
 
           if (handler.get) {
             const response = await handler.get();
-
             return { success: true, data: response };
           }
         } catch (err) {
@@ -98,6 +98,7 @@ export const GlobalProvider = ({ children }) => {
     {
       add: "add-income",
       get: "get-incomes",
+      update: "update-income/:id",
       delete: "delete-income/:id",
     },
     "incomes"
@@ -106,6 +107,7 @@ export const GlobalProvider = ({ children }) => {
   const expenseHandler = createApiHandler(
     {
       add: "add-expense",
+      update: "update-expense/:id",
       get: "get-expenses",
       delete: "delete-expense/:id",
     },
@@ -142,10 +144,12 @@ export const GlobalProvider = ({ children }) => {
 
   // Recreating previous functions using new handlers
   const addIncome = incomeHandler.add;
+  const updateIncome = incomeHandler.update;
   const getIncomes = incomeHandler.get;
   const deleteIncome = incomeHandler.delete;
 
   const addExpense = expenseHandler.add;
+  const updateExpense = expenseHandler.update;
   const getExpenses = expenseHandler.get;
   const deleteExpense = expenseHandler.delete;
 
@@ -185,10 +189,12 @@ export const GlobalProvider = ({ children }) => {
         value={{
           ...state,
           addIncome,
+          updateIncome,
           getIncomes,
           deleteIncome,
           addExpense,
           getExpenses,
+          updateExpense,
           deleteExpense,
           addDebt,
           getDebts,

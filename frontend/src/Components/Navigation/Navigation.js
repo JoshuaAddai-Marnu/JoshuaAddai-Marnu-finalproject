@@ -14,12 +14,12 @@ function Navigation() {
   const router = useNavigate();
   const userName = localStorage.getItem("JB_NAME");
   const firstName = userName ? userName.split(" ")[0] : "";
-  const { totalIncome, getIncomes } = useGlobalContext();
+  const { totalBalance, getIncomes } = useGlobalContext();
   useEffect(() => {
     getIncomes();
   }, []);
 
-  const totalIncomeValue = totalIncome();
+  const totalIncomeValue = totalBalance();
 
   return (
     <NavStyled>

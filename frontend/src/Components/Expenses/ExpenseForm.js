@@ -14,6 +14,7 @@ function ExpenseForm() {
 
   const onOpenModal = () => setOpen(true);
   const onCloseModal = () => setOpen(false);
+
   const [inputState, setInputState] = useState({
     title: "",
     amount: "",
@@ -44,6 +45,19 @@ function ExpenseForm() {
   useEffect(() => {
     getCategories("type=expense");
   }, []);
+
+  // Combine prelisted categories with dynamically fetched categories
+  const combinedCategories = [
+    ...categories.map((c) => ({ label: c.label, value: c.value })),
+    { label: "Education", value: "education" },
+    { label: "Groceries", value: "groceries" },
+    { label: "Health", value: "health" },
+    { label: "Subscriptions", value: "subscriptions" },
+    { label: "Takeaways", value: "takeaways" },
+    { label: "Clothing", value: "clothing" },
+    { label: "Travelling", value: "travelling" },
+    { label: "Other", value: "other" },
+  ];
 
   return (
     <ExpenseFormStyled onSubmit={handleSubmit}>
@@ -85,25 +99,22 @@ function ExpenseForm() {
           id="category"
           onChange={(e) => {
             const value = e.target.value;
-            if (value === "" || value === "other") {
+            if (value === "add_new") {
               onOpenModal();
             } else {
-              setInputState({ ...inputState, category: e.target.value });
+              setInputState({ ...inputState, category: value });
             }
           }}
         >
           <option value="" disabled>
-            Select Option
+            Select Expense Category
           </option>
-          {categories?.length
-            ? categories.map((c) => (
-                <option key={c._id} value={c.value}>
-                  {c.label}
-                </option>
-              ))
-            : null}
-
-          <option value="other">Add New</option>
+          {combinedCategories.map((c, index) => (
+            <option key={index} value={c.value}>
+              {c.label}
+            </option>
+          ))}
+          <option value="add_new">Add New</option>
         </select>
       </div>
       <div className="input-control">
@@ -161,11 +172,6 @@ const ExpenseFormStyled = styled.form`
   .input-control {
     input {
       width: 100%;
-    }
-    ${
-      "" /* div {
-      width: 100%;
-    } */
     }
   }
 

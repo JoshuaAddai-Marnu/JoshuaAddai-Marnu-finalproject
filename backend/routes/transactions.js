@@ -39,10 +39,10 @@ router
   .post("/add-income", authenticateJWT, addIncome)
   .get("/get-incomes", authenticateJWT, getIncomes)
   .delete("/delete-income/:id", authenticateJWT, deleteIncome)
-  .put("/update-income/:id", updateIncome)
+  .put("/update-income/:id", authenticateJWT, updateIncome)
   // Expense Routes
   .post("/add-expense", authenticateJWT, addExpense)
-  .put("/update-expense/:id", updateExpense)
+  .put("/update-expense/:id", authenticateJWT, updateExpense)
   .get("/get-expenses", authenticateJWT, getExpense)
   .delete("/delete-expense/:id", authenticateJWT, deleteExpense)
   .post("/categories", authenticateJWT, createCategory)

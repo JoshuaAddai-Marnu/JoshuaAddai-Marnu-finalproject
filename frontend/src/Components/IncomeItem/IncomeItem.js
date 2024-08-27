@@ -1,8 +1,12 @@
-import React from 'react';
+import React, { useState } from 'react';
 import styled from 'styled-components';
 import { dateFormat } from '../../Utils/dateFormat';
-import { bitcoin, book, calender, card, circle, clothing, comment, pound, food, freelance, medical, money, piggy, stocks, takeaway, trash, tv, users, yt } from '../../Utils/Icons';
+import {
+    bitcoin, book, calender, card, circle, clothing, comment, pound, food, freelance, medical, money,
+    piggy, stocks, takeaway, trash, tv, users, yt, edit // Added the edit icon
+} from '../../Utils/Icons';
 import Button from '../Button/Button';
+import { useGlobalContext } from '../../Context/globalContext';
 
 function IncomeItem({
     id,
@@ -15,6 +19,10 @@ function IncomeItem({
     indicatorColor,
     type
 }) {
+    const { updateIncome, updateExpense } = useGlobalContext(); // Import the update functions
+    const [isEditing, setIsEditing] = useState(false); // State to track if the item is being edited
+    const [editState, setEditState] = useState({ title, amount, date, category, description }); // State to hold the editable fields
+
     const categoryIcon = () => {
         switch (category) {
             case 'salary':
@@ -61,34 +69,125 @@ function IncomeItem({
         }
     };
 
+    const handleEdit = () => {
+        setIsEditing(true);
+    };
+
+    const handleSave = async () => {
+        const updatedItem = {
+            id,
+            ...editState,
+        };
+        if (type === 'expense') {
+            await updateExpense(id, updatedItem);
+        } else {
+            await updateIncome(id, updatedItem);
+        }
+        setIsEditing(false);
+    };
+
+    const handleCancel = () => {
+        setIsEditing(false);
+        setEditState({ title, amount, date, category, description });
+    };
+
+    const handleInputChange = (e) => {
+        const { name, value } = e.target;
+        setEditState({ ...editState, [name]: value });
+    };
+
     return (
         <IncomeItemStyled indicator={indicatorColor}>
             <div className="icon">
                 {type === 'expense' ? expenseCatIcon() : categoryIcon()}
             </div>
             <div className="content">
-                <h5>{title}</h5>
-                <div className="inner-content">
-                    <div className="text">
-                        <p>{pound} {amount}</p>
-                        <p>{calender} {dateFormat(date)}</p>
-                        <p>
-                            {comment}
-                            {description}
-                        </p>
-                    </div>
-                    <div className="btn-con">
-                        <Button
-                            icon={trash}
-                            bPad={'1rem'}
-                            bRad={'50%'}
-                            bg={'var(--primary-color'}
-                            color={'#fff'}
-                            iColor={'#fff'}
-                            hColor={'var(--color-green)'}
-                            onClick={() => deleteItem(id)}
+                {isEditing ? (
+                    <>
+                        <input
+                            type="text"
+                            name="title"
+                            value={editState.title}
+                            onChange={handleInputChange}
                         />
-                    </div>
+                        <input
+                            type="number"
+                            name="amount"
+                            value={editState.amount}
+                            onChange={handleInputChange}
+                        />
+                        <input
+                            type="text"
+                            name="category"
+                            value={editState.category}
+                            onChange={handleInputChange}
+                        />
+                        <input
+                            type="date"
+                            name="date"
+                            value={editState.date}
+                            onChange={handleInputChange}
+                        />
+                        <textarea
+                            name="description"
+                            value={editState.description}
+                            onChange={handleInputChange}
+                        />
+                    </>
+                ) : (
+                    <>
+                        <h5>{title}</h5>
+                        <div className="inner-content">
+                            <p className="amount">{pound} {amount}</p>
+                            <p className="date">{calender} {dateFormat(date)}</p>
+                            <p className="category"><strong>{category}: </strong>{description}</p>
+                        </div>
+                    </>
+                )}
+                <div className="btn-con">
+                    {isEditing ? (
+                        <>
+                            <Button
+                                name="Save"
+                                icon={edit}
+                                bPad={'1rem'}
+                                bRad={'50%'}
+                                bg={'var(--primary-color)'}
+                                color={'#fff'}
+                                onClick={handleSave}
+                            />
+                            <Button
+                                name="Cancel"
+                                icon={trash}
+                                bPad={'1rem'}
+                                bRad={'50%'}
+                                bg={'#d9534f'}
+                                color={'#fff'}
+                                onClick={handleCancel}
+                            />
+                        </>
+                    ) : (
+                        <>
+                            <Button
+                                icon={edit}
+                                bPad={'1rem'}
+                                bRad={'50%'}
+                                bg={'#f0ad4e'}
+                                color={'#fff'}
+                                onClick={handleEdit}
+                            />
+                            <Button
+                                icon={trash}
+                                bPad={'1rem'}
+                                bRad={'50%'}
+                                bg={'var(--primary-color)'}
+                                color={'#fff'}
+                                iColor={'#fff'}
+                                hColor={'var(--color-green)'}
+                                onClick={() => deleteItem(id)}
+                            />
+                        </>
+                    )}
                 </div>
             </div>
         </IncomeItemStyled>
@@ -109,12 +208,14 @@ const IncomeItemStyled = styled.div`
     color: #222260;
     transition: all 0.3s ease-in-out;
 
-    @media (max-width: 768px) {
-        flex-direction: column;
-        align-items: flex-start;
+    &:hover {
+        transform: translateY(-5px);
+        .icon {
+            transform: scale(1.1);
+        }
     }
 
-    .icon{
+    .icon {
         width: 80px;
         height: 80px;
         border-radius: 20px;
@@ -124,91 +225,66 @@ const IncomeItemStyled = styled.div`
         justify-content: center;
         border: 2px solid #FFFFFF;
         transition: transform 0.3s ease-in-out;
-        i{
-            font-size: 2.6rem;
-        }
 
-        @media (max-width: 768px) {
-            width: 60px;
-            height: 60px;
+        i {
+            font-size: 2.6rem;
         }
     }
 
-    .content{
+    .content {
         flex: 1;
         display: flex;
-        flex-direction: column;
-        gap: 0.5rem;
+        align-items: center;
+        gap: 1.5rem;
+        width: 100%;
 
-        h5{
+        h5 {
             font-size: 1.3rem;
-            padding-left: 2rem;
             position: relative;
+            margin-right: 1rem;
 
-            @media (max-width: 768px) {
-                padding-left: 1rem;
-                font-size: 1.1rem;
-            }
-
-            &::before{
+            &::before {
                 content: '';
                 position: absolute;
-                left: 0;
+                left: -1rem;
                 top: 50%;
                 transform: translateY(-50%);
                 width: 0.8rem;
                 height: 0.8rem;
                 border-radius: 50%;
                 background: ${props => props.indicator};
-
-                @media (max-width: 768px) {
-                    width: 0.6rem;
-                    height: 0.6rem;
-                }
             }
         }
 
-        .inner-content{
+        .inner-content {
             display: flex;
-            justify-content: space-between;
             align-items: center;
+            gap: 1.5rem;
+            flex: 1;
+            flex-wrap: wrap;
 
-            @media (max-width: 768px) {
-                flex-direction: column;
-                align-items: flex-start;
-                gap: 0.5rem;
-            }
-
-            .text{
+            .amount, .date, .category {
                 display: flex;
                 align-items: center;
-                gap: 1.5rem;
-
-                @media (max-width: 768px) {
-                    gap: 1rem;
-                    flex-direction: column;
-                    align-items: flex-start;
-                }
-
-                p{
-                    display: flex;
-                    align-items: center;
-                    gap: 0.5rem;
-                    color: var(--primary-color);
-                    opacity: 0.8;
-
-                    @media (max-width: 768px) {
-                        font-size: 0.9rem;
-                    }
-                }
+                gap: 0.5rem;
+                color: var(--primary-color);
+                opacity: 0.8;
+                white-space: nowrap;
             }
-        }
-    }
 
-    &:hover {
-        transform: translateY(-5px);
-        .icon {
-            transform: scale(1.1);
+            .category {
+                flex: 1;
+                white-space: normal;
+                word-wrap: break-word;
+            }
+
+            .btn-con {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                margin-left: auto;
+                gap: 0.5rem;
+            }
         }
     }
 `;

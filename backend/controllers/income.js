@@ -5,6 +5,9 @@ exports.addIncome = async (req, res) => {
   const { title, amount, category, description, date } = req.body;
 
   const user = req.user;
+
+  console.log(user)
+
   const myProfile = await UserSchema.findOne({ email: user.email });
 
   const income = IncomeSchema({
@@ -34,11 +37,14 @@ exports.addIncome = async (req, res) => {
 };
 
 exports.updateIncome = async (req, res) => {
+  const user = req.user;
   const { id } = req.params;
   const { title, amount, category, description, date } = req.body;
 
+  
+
   try {
-    const user = req.user;
+    
     const myProfile = await UserSchema.findOne({ email: user.email });
 
     const income = await IncomeSchema.findOne({ _id: id, user: myProfile });

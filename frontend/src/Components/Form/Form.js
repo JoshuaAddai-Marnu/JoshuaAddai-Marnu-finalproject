@@ -47,6 +47,19 @@ function Form() {
     getCategories("type=income");
   }, []);
 
+  // Combine prelisted categories with dynamically fetched categories
+  const combinedCategories = [
+    ...categories.map((c) => ({ label: c.label, value: c.value })),
+    { label: "Salary", value: "salary" },
+    { label: "Freelancing", value: "freelancing" },
+    { label: "Investments", value: "investments" },
+    { label: "Stocks", value: "stocks" },
+    { label: "Bitcoin", value: "bitcoin" },
+    { label: "Bank Transfer", value: "bank" },
+    { label: "YouTube", value: "youtube" },
+    { label: "Other", value: "other" },
+  ];
+
   return (
     <FormStyled onSubmit={handleSubmit}>
       {error && <p className="error">{error}</p>}
@@ -55,7 +68,7 @@ function Form() {
           type="text"
           value={title}
           name={"title"}
-          placeholder="Salary Title"
+          placeholder="Income Title"
           onChange={handleInput("title")}
         />
       </div>
@@ -64,7 +77,7 @@ function Form() {
           value={amount}
           type="text"
           name={"amount"}
-          placeholder={"Salary Amount"}
+          placeholder={"Income Amount"}
           onChange={handleInput("amount")}
         />
       </div>
@@ -87,25 +100,22 @@ function Form() {
           id="category"
           onChange={(e) => {
             const value = e.target.value;
-            if (value === "" || value === "other") {
+            if (value === "add_new") {
               onOpenModal();
             } else {
-              setInputState({ ...inputState, category: e.target.value });
+              setInputState({ ...inputState, category: value });
             }
           }}
         >
           <option value="" disabled>
-            Select Option
+            Select Income Category
           </option>
-          {categories?.length
-            ? categories.map((c) => (
-                <option key={c._id} value={c.value}>
-                  {c.label}
-                </option>
-              ))
-            : null}
-
-          <option value="other">Add New</option>
+          {combinedCategories.map((c, index) => (
+            <option key={index} value={c.value}>
+              {c.label}
+            </option>
+          ))}
+          <option value="add_new">Add New</option>
         </select>
       </div>
       <div className="input-control">

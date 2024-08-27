@@ -126,7 +126,7 @@ function Goals() {
   const startEditingGoal = (goal) => {
     updateInputValues("goalName", goal.name);
     updateInputValues("targetAmount", goal.targetAmount.toString());
-    const formattedDate = goal.date.slice(0, 10);
+    const formattedDate = goal.date;
     updateInputValues("goalDate", formattedDate);
     updateInputValues("editingGoalId", goal._id);
   };

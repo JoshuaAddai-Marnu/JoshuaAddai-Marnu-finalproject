@@ -34,22 +34,27 @@ exports.getUserDebts = async (req, res) => {
 
 exports.updateDebt = async (req, res) => {
   const { id } = req.params;
+  // console.log(id)
+  console.log(req)
   try {
-    const { paymentAmount, paymentDate } = req.body;
+    const { name, totalAmount, debtDate } = req.body;
+    // console.log(debt)
 
-    if (!paymentAmount || !paymentDate) {
+    if (!totalAmount || !debtDate) {
       return res
         .status(400)
         .json({ error: "Payment amount, and payment date are required" });
     }
+
 
     const debt = await DebtSchema.findById(id);
 
     if (!debt) {
       return res.status(404).json({ error: "Debt not found" });
     }
+    console.log(debt)
 
-    debt.paymentAmount = parseFloat(paymentAmount);
+    debt.totalAmount = parseFloat(totalAmount);
     await debt.save();
 
     res.status(200).json({ message: "Debt successfully updated", debt });
@@ -110,9 +115,14 @@ exports.addPayment = async (req, res) => {
 };
 
 exports.updatePayment = async (req, res) => {
+  console.log(res)
   try {
     const { debtId, paymentId } = req.params;
     const { amount, paymentDate } = req.body;
+
+    // console.log(debt);
+    // console.log(paymentId);
+    // console.log(debtId);
 
     if (!amount || !paymentDate) {
       return res
