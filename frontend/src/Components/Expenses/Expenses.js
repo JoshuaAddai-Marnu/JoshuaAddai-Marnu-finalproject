@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
 import { useGlobalContext } from '../../Context/globalContext';
 import { InnerLayout } from '../../Styles/Layouts';
@@ -70,6 +70,18 @@ function Expenses() {
         return motivationalSpeeches[randomIndex];
     };
 
+    // State to store the current motivational message
+    const [currentMessage, setCurrentMessage] = useState(getRandomSpeech());
+
+    // Set up an interval to change the message every 7 seconds
+    useEffect(() => {
+        const interval = setInterval(() => {
+            setCurrentMessage(getRandomSpeech());
+        }, 7000); // 7000ms = 7 seconds
+
+        return () => clearInterval(interval); // Clear the interval when the component unmounts
+    }, []);
+
     return (
         <ExpenseStyled>
             <InnerLayout>
@@ -86,7 +98,7 @@ function Expenses() {
                         <h3>Expense Distribution by Category</h3>
                         <Pie data={pieData} />
                         <MotivationalMessage>
-                            {getRandomSpeech()}
+                            {currentMessage}
                         </MotivationalMessage>
                     </PieChartContainer>
                 </div>

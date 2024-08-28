@@ -22,7 +22,7 @@ export default function Login() {
   useEffect(() => {
     // redirect to home if user is already logged in
     if (localStorage.getItem("JB_TOKEN")?.length) {
-      router("/");
+      router("/home");
     }
   }, []);
 

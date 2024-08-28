@@ -8,12 +8,7 @@ import Dashboard from "./Components/Dashboard/Dashboard";
 import Income from "./Components/Income/Income";
 import Expenses from "./Components/Expenses/Expenses";
 import { useGlobalContext } from "./Context/globalContext";
-import {
-  BrowserRouter as Router,
-  Route,
-  Routes,
-  useLocation,
-} from "react-router-dom";
+import { BrowserRouter as Router, Route, Routes, useLocation, } from "react-router-dom";
 import Login from "./Components/Login/Login";
 import Signup from "./Components/Login/Signup";
 import Goals from "./Components/Goals/Goal";
@@ -22,6 +17,13 @@ import WageCalculator from "./Components/WageCalc/WageCalc";
 import Home from "./Components/Home/Home";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+
+import IncomeTrackerGuide from './Components/Guides/IncomeTrackerGuide';
+import ExpenseTrackerGuide from './Components/Guides/ExpenseTrackerGuide';
+import DebtTrackerGuide from './Components/Guides/DebtTrackerGuide';
+import GoalTrackerGuide from './Components/Guides/GoalTrackerGuide';
+import WageCalculatorGuide from './Components/Guides/WageCalculatorGuide';
+import DashboardGuide from './Components/Guides/DashboardGuide';
 
 function App() {
   const [active, setActive] = React.useState(1);
@@ -46,10 +48,18 @@ function App() {
             <Route path="dashboard" element={<Dashboard />} />
             <Route path="income" element={<Income />} />
             <Route path="expenses" element={<Expenses />} />
+            <Route path="/home" element={<Home />} />
             <Route path="/" element={<Home />} />
             <Route path="goals" element={<Goals />} />
             <Route path="debts" element={<DebtTracker />} />
             <Route path="wageCalc" element={<WageCalculator />} />
+
+            <Route path="/income-tracker-guide" element={<IncomeTrackerGuide />} />
+            <Route path="/expense-tracker-guide" element={<ExpenseTrackerGuide />} />
+            <Route path="/debt-tracker-guide" element={<DebtTrackerGuide />} />
+            <Route path="/goal-tracker-guide" element={<GoalTrackerGuide />} />
+            <Route path="/wage-calculator-guide" element={<WageCalculatorGuide />} />
+            <Route path="/dashboard-guide" element={<DashboardGuide />} />
           </Routes>
         </main>
       </MainLayout>

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import styled from "styled-components";
 import { InnerLayout } from "../../Styles/Layouts";
 import { useGlobalContext } from "../../Context/globalContext";
@@ -66,6 +66,18 @@ function Income() {
     return motivationalSpeeches[randomIndex];
   };
 
+  // State to store the current motivational message
+  const [currentMessage, setCurrentMessage] = useState(getRandomSpeech());
+
+  // Set up an interval to change the message every 7 seconds
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentMessage(getRandomSpeech());
+    }, 7000); // 7000ms = 7 seconds
+
+    return () => clearInterval(interval); // Clear the interval when the component unmounts
+  }, []);
+
   return (
     <IncomeStyled>
       <InnerLayout>
@@ -82,7 +94,7 @@ function Income() {
           <PieChartContainer>
             <h3>Income Distribution by Category</h3>
             <Pie data={pieData} />
-            <MotivationalMessage>{getRandomSpeech()}</MotivationalMessage>
+            <MotivationalMessage>{currentMessage}</MotivationalMessage>
           </PieChartContainer>
         </div>
         <IncomesContainer>

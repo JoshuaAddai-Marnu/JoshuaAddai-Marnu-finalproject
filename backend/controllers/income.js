@@ -41,26 +41,24 @@ exports.updateIncome = async (req, res) => {
   const { id } = req.params;
   const { title, amount, category, description, date } = req.body;
 
-  
+
 
   try {
-    
     const myProfile = await UserSchema.findOne({ email: user.email });
-
     const income = await IncomeSchema.findOne({ _id: id, user: myProfile });
-
+  
     if (!income) {
       return res.status(404).json({ message: "Income not found" });
     }
-
+  
     // Validations
     if (!title || !category || !description || !date) {
       return res.status(400).json({ message: "All fields are required!" });
     }
-    if (amount <= 0 || typeof amount !== "number") {
-      return res
-        .status(400)
-        .json({ message: "Amount must be a positive number!" });
+  
+    const parsedAmount = Number(amount);
+    if (isNaN(parsedAmount) || parsedAmount <= 0) {
+      return res.status(400).json({ message: "Amount must be a positive number!" });
     }
 
     // Update fields

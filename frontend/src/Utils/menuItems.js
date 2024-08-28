@@ -29,7 +29,7 @@ export const menuItems = [
   },
   {
     id: 4,
-    title: "Spending Snapshot",
+    title: "Expense Tracker",
     icon: expenses,
     link: "/expenses",
   },
