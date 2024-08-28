@@ -170,12 +170,16 @@ export const GlobalProvider = ({ children }) => {
     return items.reduce((total, item) => total + item.amount, 0);
   };
 
-  const totalIncome = () => calculateTotal(state.incomes);
-  const totalExpenses = () => calculateTotal(state.expenses);
-
-  const totalBalance = () => {
-    return totalIncome() - totalExpenses();
+  // Function to format to two decimal places
+  const formatToTwoDecimals = (value) => {
+    return value.toFixed(2);
   };
+
+  const totalIncome = () => formatToTwoDecimals(calculateTotal(state.incomes));
+  const totalExpenses = () => formatToTwoDecimals(calculateTotal(state.expenses));
+
+
+  const totalBalance = () => formatToTwoDecimals(totalIncome() - totalExpenses());
 
   const transactionHistory = () => {
     const history = [...state.incomes, ...state.expenses];
