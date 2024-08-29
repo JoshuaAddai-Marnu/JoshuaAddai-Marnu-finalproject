@@ -27,8 +27,9 @@ function Navigation() {
         <img src={JBB} alt="User Avatar" />
         <TextContainer>
           <div className="text">
-            <h2>Welcome, {firstName}</h2>
+            <h2>Welcome, {firstName} 😉</h2>
             <p>
+              <h2>Your Balance:</h2>
               {pound}&nbsp;
               {totalIncomeValue ? formatAmount(totalIncomeValue) : "0"}
             </p>
