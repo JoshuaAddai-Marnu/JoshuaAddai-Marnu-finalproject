@@ -25,6 +25,7 @@ exports.addUser = async (req, res) => {
     }
 
     // Hashing the password using bcrypt and the generated salt.
+    //password is transformed into a fixed-length string of characters
     const hashPassword = bcrypt.hashSync(password, salt);
 
     // Creating a new user instance with the provided data and hashed password.

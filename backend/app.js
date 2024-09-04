@@ -9,16 +9,16 @@ require('dotenv').config()
 
 const PORT = process.env.PORT
 
-//middlewares
-app.use(express.json())
-app.use(cors())
+//middlewares function
+app.use(express.json()) //used to parse incoming JSON data from the request body.
+app.use(cors()) //Enables Cross-Origin Resource Sharing(helps frontend interacts with backend APIs)
 
 //routes
 readdirSync('./routes').map((route) => app.use('/api/v1', require('./routes/' + route)))
 
-
+// starting a server and connecting to a database
 const server = () => {
-    db()
+    db() // Call the function to connect to the database
     app.listen(PORT, () => {
         console.log('listening to port:', PORT)
     })

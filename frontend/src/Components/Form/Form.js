@@ -7,9 +7,13 @@ import Button from "../Button/Button";
 import { plus } from "../../Utils/Icons";
 import CategoryForm from "../Expenses/CategoryForm";
 
+
+// Main form component to add income
 function Form() {
   const { addIncome, getIncomes, error, setError, getCategories, categories } =
     useGlobalContext();
+
+    // Initial state for form inputs
   const [inputState, setInputState] = useState({
     title: "",
     amount: "",
@@ -20,31 +24,38 @@ function Form() {
 
   const { title, amount, date, category, description } = inputState;
 
+   // State for controlling modal visibility
   const [open, setOpen] = useState(false);
 
+ 
+  // Functions to handle modal open and close
   const onOpenModal = () => setOpen(true);
   const onCloseModal = () => setOpen(false);
 
-  const handleInput = (name) => (e) => {
-    setInputState({ ...inputState, [name]: e.target.value });
-    setError("");
-  };
+    // Function to handle form inputs dynamically
+    const handleInput = (name) => (e) => {
+      setInputState({ ...inputState, [name]: e.target.value }); // Update inputState with new values
+      setError(""); // Clear any error when input is modified
+    };
+  
 
+  // Function to handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
-    await addIncome(inputState);
-    getIncomes();
+    await addIncome(inputState); // Add income using global context
+    getIncomes(); // Fetch updated list of incomes after adding new entry
     setInputState({
       title: "",
       amount: "",
       date: "",
       category: "",
       description: "",
-    });
+    }); // Reset form inputs after submission
   };
 
+  // UseEffect to fetch categories when the component is mounted
   useEffect(() => {
-    getCategories("type=income");
+    getCategories("type=income"); // Fetch income categories
   }, []);
 
   // Combine prelisted categories with dynamically fetched categories
@@ -63,24 +74,29 @@ function Form() {
   return (
     <FormStyled onSubmit={handleSubmit}>
       {error && <p className="error">{error}</p>}
+      {/* Input field for income title */}
       <div className="input-control">
         <input
           type="text"
           value={title}
           name={"title"}
           placeholder="Income Title"
-          onChange={handleInput("title")}
+          onChange={handleInput("title")} // Update title in state
         />
       </div>
+
+      {/* Input field for income amount */}
       <div className="input-control">
         <input
           value={amount}
           type="text"
           name={"amount"}
           placeholder={"Income Amount"}
-          onChange={handleInput("amount")}
+          onChange={handleInput("amount")} // Update amount in state
         />
       </div>
+
+      {/* Date picker for selecting date */}
       <div className="input-control">
         <DatePicker
           id="date"
@@ -88,10 +104,12 @@ function Form() {
           selected={date}
           dateFormat="dd/MM/yyyy"
           onChange={(date) => {
-            setInputState({ ...inputState, date: date });
+            setInputState({ ...inputState, date: date }); // Update date in state
           }}
         />
       </div>
+
+      {/* Select dropdown for category */}
       <div className="selects input-control">
         <select
           required
@@ -101,9 +119,9 @@ function Form() {
           onChange={(e) => {
             const value = e.target.value;
             if (value === "add_new") {
-              onOpenModal();
+              onOpenModal(); // Open modal to add a new category
             } else {
-              setInputState({ ...inputState, category: value });
+              setInputState({ ...inputState, category: value }); // Update category in state
             }
           }}
         >
@@ -115,9 +133,11 @@ function Form() {
               {c.label}
             </option>
           ))}
-          <option value="add_new">Add New</option>
+          <option value="add_new">Add New</option> {/* Option to add a new category */}
         </select>
       </div>
+
+            {/* Text area for adding a description */}
       <div className="input-control">
         <textarea
           name="description"
@@ -126,9 +146,11 @@ function Form() {
           id="description"
           cols="30"
           rows="4"
-          onChange={handleInput("description")}
+          onChange={handleInput("description")} // Update description in state
         ></textarea>
       </div>
+
+      {/* Submit button */}
       <div className="submit-container">
         <div className="submit-btn">
           <Button

@@ -1,47 +1,51 @@
 import React from 'react';
 import {
-    Chart as ChartJs,
-    CategoryScale,
-    LinearScale,
-    PointElement,
-    LineElement,
-    Title,
-    Tooltip,
-    Legend,
-    ArcElement,
+    Chart as ChartJs, // Alias for the Chart.js library
+    CategoryScale, // Used for the x-axis category scaling
+    LinearScale, // Used for the y-axis linear scaling
+    PointElement, // Represents points in the chart
+    LineElement, // Represents lines between points
+    Title, // Used to display a title in the chart
+    Tooltip, // Enables tooltips (popups) on hover
+    Legend, // Displays a legend (key) for the datasets
+    ArcElement, // Used for pie or doughnut charts (though not used in this line chart)
 } from 'chart.js';
-import { Line } from 'react-chartjs-2';
-import styled from 'styled-components';
-import { useGlobalContext } from '../../Context/globalContext';
-import { dateFormat } from '../../Utils/dateFormat';
+import { Line } from 'react-chartjs-2'; // Line chart component from the 'react-chartjs-2' library
+import styled from 'styled-components'; // Used to style the component using tagged template literals
+import { useGlobalContext } from '../../Context/globalContext'; // Custom hook to get data from the global context (likely contains incomes and expenses data)
+import { dateFormat } from '../../Utils/dateFormat'; // A utility function to format dates
 
+// Registering necessary elements and scales to Chart.js
 ChartJs.register(
-    CategoryScale,
-    LinearScale,
-    PointElement,
-    LineElement,
-    Title,
-    Tooltip,
-    Legend,
-    ArcElement,
+    CategoryScale, // For x-axis scaling
+    LinearScale, // For y-axis scaling
+    PointElement, // For rendering data points
+    LineElement, // For rendering the line connecting data points
+    Title, // To display chart title
+    Tooltip, // For tooltips when hovering over data points
+    Legend, // For chart legend (descriptions of datasets)
+    ArcElement, // Not used in this chart but necessary for future features
 );
 
 function Chart() {
+    // Accessing incomes and expenses data from the global context using a custom hook
     const { incomes, expenses } = useGlobalContext();
 
-    // Ensure the data is sorted by date
+    // Sorting income and expense data based on date (oldest to newest)
     const sortedIncomes = incomes.sort((a, b) => new Date(a.date) - new Date(b.date));
     const sortedExpenses = expenses.sort((a, b) => new Date(a.date) - new Date(b.date));
 
+    // Preparing the data for the Line chart
     const data = {
+        // Setting the x-axis labels as formatted dates of income entries
         labels: sortedIncomes.map((inc) => {
-            const { date } = inc;
-            return dateFormat(date);
+            const { date } = inc; // Extract the date from each income entry
+            return dateFormat(date); // Format the date (likely in a readable format)
         }),
         datasets: [
             {
                 label: 'Income',
-                data: sortedIncomes.map((income) => income.amount),
+                data: sortedIncomes.map((income) => income.amount), // y-axis values (income amounts)
                 borderColor: '#4caf50',
                 backgroundColor: 'rgba(76, 175, 80, 0.1)',
                 pointBackgroundColor: '#4caf50',
@@ -53,7 +57,7 @@ function Chart() {
             },
             {
                 label: 'Expenses',
-                data: sortedExpenses.map((expense) => expense.amount),
+                data: sortedExpenses.map((expense) => expense.amount),  // y-axis values (expense amounts)
                 borderColor: '#f44336',
                 backgroundColor: 'rgba(244, 67, 54, 0.1)',
                 pointBackgroundColor: '#f44336',

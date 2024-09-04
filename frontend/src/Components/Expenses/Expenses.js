@@ -7,21 +7,25 @@ import ExpenseForm from './ExpenseForm';
 import { Pie } from 'react-chartjs-2';
 import { Chart as ChartJs, ArcElement, Tooltip, Legend } from 'chart.js';
 
+// Registering Chart.js elements for Pie chart
 ChartJs.register(ArcElement, Tooltip, Legend);
 
+// Expenses component for displaying and managing expenses
 function Expenses() {
     const { expenses, getExpenses, deleteExpense, totalExpenses } = useGlobalContext();
 
+    // Fetch expenses when the component is mounted
     useEffect(() => {
-        getExpenses();
+        getExpenses(); // Fetch the expenses from the API
     }, []);
 
-    // Prepare data for the pie chart
+    // Prepare data for the pie chart by categorizing expenses
     const expenseCategories = expenses.reduce((acc, expense) => {
-        acc[expense.category] = (acc[expense.category] || 0) + expense.amount;
+        acc[expense.category] = (acc[expense.category] || 0) + expense.amount; // Sum up the amounts for each category
         return acc;
     }, {});
 
+    // Configuration for Pie chart data
     const pieData = {
         labels: Object.keys(expenseCategories),
         datasets: [
@@ -90,19 +94,20 @@ function Expenses() {
                 <div className="income-content">
                     <div className="form-and-list">
                         <div className="form-container">
-                            <ExpenseForm />
+                            <ExpenseForm /> {/* Expense form to add new expenses */}
                         </div>
 
                     </div>
                     <PieChartContainer>
                         <h3>Expense Distribution by Category</h3>
-                        <Pie data={pieData} />
+                        <Pie data={pieData} /> {/* Pie chart showing distribution of expenses */}
                         <MotivationalMessage>
-                            {currentMessage}
+                            {currentMessage} {/* Display the current motivational message */}
                         </MotivationalMessage>
                     </PieChartContainer>
                 </div>
                 <ExpensesContainer>
+                    {/* Map over the list of expenses and display each using ExpenseItem component */}
                     {expenses.map((expense) => {
                         const { _id, title, amount, date, category, description, type } = expense;
                         return (
@@ -116,7 +121,7 @@ function Expenses() {
                                 type={type}
                                 category={category}
                                 indicatorColor="var(--color-green)"
-                                deleteItem={deleteExpense}
+                                deleteItem={deleteExpense} // Function to delete an expense
                             />
                         );
                     })}

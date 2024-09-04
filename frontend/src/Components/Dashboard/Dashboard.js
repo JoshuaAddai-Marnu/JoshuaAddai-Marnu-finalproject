@@ -9,10 +9,11 @@ import Chart from '../Chart/Chart';
 function Dashboard() {
     const { totalExpenses, incomes, expenses, totalIncome, totalBalance, getIncomes, getExpenses } = useGlobalContext();
 
+    // useEffect hook to fetch incomes and expenses when the component loads
     useEffect(() => {
-        getIncomes();
-        getExpenses();
-    }, []);
+        getIncomes(); // Fetch the list of incomes
+        getExpenses(); // Fetch the list of expenses
+    }, []); // Empty dependency array means this effect runs once on mount
 
     return (
         <DashboardStyled>

@@ -16,6 +16,7 @@ ChartJs.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend)
 const BASE_URL = "http://localhost:3001/api/v1/";
 
 function DebtTracker() {
+  // Manage form inputs using custom hook
   const { inputValues, resetInputVlues, updateInputValues } = useInput({
     debtName: "",
     totalAmount: "",
@@ -25,16 +26,21 @@ function DebtTracker() {
   });
   const { debtName, totalAmount, debtDate, paymentAmount, paymentDate } = inputValues;
 
-  const [selectedDebt, setSelectedDebt] = useState("");
-  const [editingDebtId, setEditingDebtId] = useState(null);
-  const [visiblePayments, setVisiblePayments] = useState({});
+  // Manage component state
+  const [selectedDebt, setSelectedDebt] = useState(""); // Manage currently selected debt for payment
+  const [editingDebtId, setEditingDebtId] = useState(null); // Track which debt is being edited
+  const [visiblePayments, setVisiblePayments] = useState({}); // Track visibility of payments for each debt
 
+  // Get necessary actions and data from global context
   const { debts, getDebts, addDebt, updateDebt, deleteDebt } = useGlobalContext();
 
+
+  // Fetch debts from the server when the component loads
   useEffect(() => {
     getDebts();
   }, []);
 
+  // Toggle visibility of payments for a specific debt
   const togglePayments = (debtId) => {
     setVisiblePayments((prevState) => ({
       ...prevState,
@@ -42,79 +48,86 @@ function DebtTracker() {
     }));
   };
 
+  // Add a new payment to a debt
   const addPayment = async (debtId, paymentData) => {
     await apiClient
-      .post(`${BASE_URL}debt/${debtId}/payments`, paymentData)
+      .post(`${BASE_URL}debt/${debtId}/payments`, paymentData) // Send POST request to add a payment
       .then((res) => {
-        resetInputVlues();
-        getDebts();
-        toaster.success(res?.data?.message || "An error occurred");
+        resetInputVlues(); // Reset form values
+        getDebts(); // Refresh the list of debts
+        toaster.success(res?.data?.message || "An error occurred"); // Show success message
       })
       .catch((err) => {
-        toaster.error(err.response?.data?.message || "An error occurred");
+        toaster.error(err.response?.data?.message || "An error occurred"); // Show error message
       });
   };
 
+  // Delete a specific payment from a debt
   const deletePayment = async (debtId, paymentId) => {
     await apiClient
-      .delete(`${BASE_URL}debt/${debtId}/payments/${paymentId}`)
+      .delete(`${BASE_URL}debt/${debtId}/payments/${paymentId}`) // Send DELETE request to remove payment
       .then((res) => {
-        getDebts();
-        toaster.success(res?.data?.message || "An error occurred");
+        getDebts(); // Refresh the list of debts
+        toaster.success(res?.data?.message || "Successfully deleted payment"); // Show success message
       })
       .catch((err) =>
         toaster.error(err.response?.data?.message || "An error occurred")
       );
   };
 
+  // Handle form input changes
   const handleInput = (name) => (e) => {
-    updateInputValues(name, e.target.value);
+    updateInputValues(name, e.target.value); // Update input value in form
   };
 
+  // Add a new debt or update an existing one
   const addOrEditDebt = async (e) => {
     e.preventDefault();
 
+    // Validate form inputs
     if (!debtName || !totalAmount || parseFloat(totalAmount) <= 0) {
       toaster.error("Please enter a valid debt name, amount, and date.");
       return;
     }
+
+    // Add new debt or update existing debt
     if (!editingDebtId) {
       await addDebt({ name: debtName, totalAmount, debtDate }).then((res) => {
         if (res.success) {
-          resetInputVlues();
+          resetInputVlues(); // Reset form values after adding
         }
       });
     } else {
-      await updateDebt(editingDebtId, {
-        name: debtName,
-        totalAmount,
-        debtDate,
-      }).then((res) => {
+      await updateDebt(editingDebtId, { name: debtName, totalAmount, debtDate }).then((res) => {
         if (res.success) {
-          resetInputVlues();
-          setEditingDebtId(null);
+          resetInputVlues(); // Reset form values
+          setEditingDebtId(null); // Clear editing state
         }
       });
     }
   };
 
+  // Start editing a specific debt
   const startEditingDebt = (id) => {
-    const debtToEdit = debts.find((debt) => debt._id === id);
-    updateInputValues("debtName", debtToEdit.name);
+    const debtToEdit = debts.find((debt) => debt._id === id); // Find debt by ID
+    updateInputValues("debtName", debtToEdit.name); // Populate form with debt data
     updateInputValues("totalAmount", debtToEdit.totalAmount.toString());
-    const formattedDate = debtToEdit.date.slice(0, 10);
+    const formattedDate = debtToEdit.date.slice(0, 10); // Format date for form
     updateInputValues("debtDate", formattedDate);
-    setEditingDebtId(id);
+    setEditingDebtId(id); // Set the debt to be edited
   };
 
+  // Make a payment for the selected debt
   const makePayment = async (e) => {
     e.preventDefault();
 
+    // Validate payment inputs
     if (!selectedDebt || !paymentAmount || parseFloat(paymentAmount) <= 0 || !paymentDate) {
       toaster.error("Please select a debt, enter a valid payment amount, and payment date.");
       return;
     }
 
+    // Validate payment amount before adding
     if (selectedDebt) {
       const foundDebt = debts.find((debt) => debt._id === selectedDebt);
       if (foundDebt?.totalAmount < parseFloat(paymentAmount)) {
@@ -125,7 +138,7 @@ function DebtTracker() {
       await addPayment(selectedDebt, {
         amount: parseFloat(paymentAmount),
         paymentDate,
-      });
+      });// Add payment to selected debt
     }
   };
 
@@ -134,6 +147,7 @@ function DebtTracker() {
       <InnerLayout>
         <h1>Debt Tracker</h1>
         <ContentContainer>
+          {/* Left side: Add/Edit debt form */}
           <LeftSide>
             <DebtForm onSubmit={addOrEditDebt}>
               <h2>
@@ -162,6 +176,7 @@ function DebtTracker() {
                 onChange={handleInput("debtDate")}
                 aria-label="Debt Date"
               />
+              {/* Button for adding or updating debt */}
               <Button
                 name={editingDebtId ? "Update" : "Add"}
                 icon={plus}
@@ -173,6 +188,7 @@ function DebtTracker() {
               />
             </DebtForm>
 
+            {/* Form for making a payment */}
             <DebtForm onSubmit={makePayment}>
               <h2>{circle} Make a Payment</h2>
               <select
@@ -215,6 +231,7 @@ function DebtTracker() {
             </DebtForm>
           </LeftSide>
 
+          {/* Right side: Display list of debts and payments */}
           <RightSide>
             <DebtList aria-live="polite">
               <h2>Your Debts</h2>

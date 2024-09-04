@@ -7,20 +7,24 @@ import Button from "../Button/Button";
 import { plus } from "../../Utils/Icons";
 import { toaster } from "../../Utils/toaster";
 
+// CategoryForm component for adding categories
 const CategoryForm = ({ open, onCloseModal, type }) => {
-  const { addCategories } = useGlobalContext();
-  const [label, setLabel] = useState("");
+  const { addCategories } = useGlobalContext(); // Get addCategories function from global context
+  const [label, setLabel] = useState(""); // State for managing the input value for category label
 
+  // Handle input change in the form
   const handleInput = (e) => setLabel(e.target.value);
 
+  // Handle form submission for adding a category
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    e.stopPropagation();
+    e.preventDefault(); // Prevent default form submission behavior
+    e.stopPropagation(); // Prevent event propagation
 
+    // Add category by sending the label and type to the global context function
     await addCategories({ label, type }, `type=${type}`).then((res) => {
       if (res.success) {
-        onCloseModal();
-        toaster.success("Successfully created category");
+        onCloseModal(); // Close the modal on successful category creation
+        toaster.success("Successfully created category"); // Show success notification
       }
     });
   };
@@ -30,12 +34,12 @@ const CategoryForm = ({ open, onCloseModal, type }) => {
       classNames={{
         modal: "customModal",
       }}
-      open={open}
+      open={open} // Control modal visibility using open prop
       onClose={() => {
-        setLabel("");
-        onCloseModal();
+        setLabel(""); // Reset label input when modal is closed
+        onCloseModal(); // Trigger onCloseModal callback to close the modal
       }}
-      center
+      center // Center the modal on the screen
     >
       <FormStyled onSubmit={handleSubmit}>
         <div className="input-control">

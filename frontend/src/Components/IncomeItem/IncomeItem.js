@@ -8,6 +8,7 @@ import {
 import Button from '../Button/Button';
 import { useGlobalContext } from '../../Context/globalContext';
 
+// Main functional component for displaying income or expense items
 function IncomeItem({
     id,
     title,
@@ -15,82 +16,73 @@ function IncomeItem({
     date,
     category,
     description,
-    deleteItem,
+    deleteItem, // Function to delete the item
     indicatorColor,
-    type
+    type // Determines if it's an income or expense
 }) {
-    const { updateIncome, updateExpense } = useGlobalContext(); // Import the update functions
-    const [isEditing, setIsEditing] = useState(false); // State to track if the item is being edited
-    const [editState, setEditState] = useState({ title, amount, date, category, description }); // State to hold the editable fields
+    // Importing update functions from the global context for income and expenses
+    const { updateIncome, updateExpense } = useGlobalContext();
+    // State to track if the item is being edited
+    const [isEditing, setIsEditing] = useState(false);
+    // State to hold the current values of editable fields (title, amount, etc.)
+    const [editState, setEditState] = useState({ title, amount, date, category, description });
 
+    // Function to get the appropriate icon for income categories
     const categoryIcon = () => {
         switch (category) {
-            case 'salary':
-                return money;
-            case 'freelancing':
-                return freelance;
-            case 'investments':
-                return stocks;
-            case 'stocks':
-                return users;
-            case 'bitcoin':
-                return bitcoin;
-            case 'bank':
-                return card;
-            case 'youtube':
-                return yt;
-            case 'other':
-                return piggy;
-            default:
-                return '';
+            case 'salary': return money;
+            case 'freelancing': return freelance;
+            case 'investments': return stocks;
+            case 'stocks': return users;
+            case 'bitcoin': return bitcoin;
+            case 'bank': return card;
+            case 'youtube': return yt;
+            case 'other': return piggy;
+            default: return '';
         }
     };
 
+    // Function to get the appropriate icon for expense categories
     const expenseCatIcon = () => {
         switch (category) {
-            case 'education':
-                return book;
-            case 'groceries':
-                return food;
-            case 'health':
-                return medical;
-            case 'subscriptions':
-                return tv;
-            case 'takeaways':
-                return takeaway;
-            case 'clothing':
-                return clothing;
-            case 'travelling':
-                return freelance;
-            case 'other':
-                return circle;
-            default:
-                return '';
+            case 'education': return book;
+            case 'groceries': return food;
+            case 'health': return medical;
+            case 'subscriptions': return tv;
+            case 'takeaways': return takeaway;
+            case 'clothing': return clothing;
+            case 'travelling': return freelance;
+            case 'other': return circle;
+            default: return '';
         }
     };
 
+    // Function to handle the edit action (sets the component to edit mode)
     const handleEdit = () => {
         setIsEditing(true);
     };
 
+    // Function to handle saving the edited item (calls the update functions for income/expenses)
     const handleSave = async () => {
         const updatedItem = {
             id,
             ...editState,
         };
         if (type === 'expense') {
-            await updateExpense(id, updatedItem);
+            await updateExpense(id, updatedItem);  // Update expense if it's an expense item
         } else {
-            await updateIncome(id, updatedItem);
+            await updateIncome(id, updatedItem); // Update income if it's an income item
         }
-        setIsEditing(false);
+        setIsEditing(false);  // Exit edit mode after saving
     };
 
+    // Function to cancel editing and reset the state to the original values
     const handleCancel = () => {
         setIsEditing(false);
         setEditState({ title, amount, date, category, description });
     };
 
+    // Function to handle input changes and update the editState with new values
     const handleInputChange = (e) => {
         const { name, value } = e.target;
         setEditState({ ...editState, [name]: value });
@@ -99,10 +91,12 @@ function IncomeItem({
     return (
         <IncomeItemStyled indicator={indicatorColor}>
             <div className="icon">
+                {/* Display the appropriate category icon based on the type (income or expense) */}
                 {type === 'expense' ? expenseCatIcon() : categoryIcon()}
             </div>
             <div className="content">
                 {isEditing ? (
+                    // If in edit mode, show input fields for editing
                     <>
                         <input
                             type="text"
@@ -135,6 +129,7 @@ function IncomeItem({
                         />
                     </>
                 ) : (
+                    // If not in edit mode, show the income/expense details
                     <>
                         <h5>{title}</h5>
                         <div className="inner-content">
@@ -146,6 +141,7 @@ function IncomeItem({
                 )}
                 <div className="btn-con">
                     {isEditing ? (
+                        // If in edit mode, show Save and Cancel buttons
                         <>
                             <Button
                                 name="Save"
@@ -167,6 +163,7 @@ function IncomeItem({
                             />
                         </>
                     ) : (
+                        // If not in edit mode, show Edit and Delete buttons
                         <>
                             <Button
                                 icon={edit}

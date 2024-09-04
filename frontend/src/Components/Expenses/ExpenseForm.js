@@ -7,14 +7,17 @@ import Button from "../Button/Button";
 import { plus } from "../../Utils/Icons";
 import CategoryForm from "./CategoryForm";
 
+// ExpenseForm component for adding new expenses
 function ExpenseForm() {
   const { addExpense, error, setError, getCategories, categories } =
     useGlobalContext();
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(false); // State for controlling the modal visibility
 
+  // Functions to open and close the modal
   const onOpenModal = () => setOpen(true);
   const onCloseModal = () => setOpen(false);
 
+  // State to manage form input values
   const [inputState, setInputState] = useState({
     title: "",
     amount: "",
@@ -23,27 +26,31 @@ function ExpenseForm() {
     description: "",
   });
 
+  // Destructure the state for easier access
   const { title, amount, date, category, description } = inputState;
 
+  // Update the input state when the user types in the form
   const handleInput = (name) => (e) => {
     setInputState({ ...inputState, [name]: e.target.value });
-    setError("");
+    setError(""); // Reset the error when the user changes input
   };
 
+  // Handle form submission for adding an expense
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    await addExpense(inputState);
+    e.preventDefault(); // Prevent default form submission behavior
+    await addExpense(inputState); // Add the expense through the global context
     setInputState({
       title: "",
       amount: "",
       date: "",
       category: "",
       description: "",
-    });
+    }); // Reset the form fields after submission
   };
 
+  // Fetch categories on component mount
   useEffect(() => {
-    getCategories("type=expense");
+    getCategories("type=expense"); // Fetch expense categories from the server
   }, []);
 
   // Combine prelisted categories with dynamically fetched categories
@@ -94,27 +101,28 @@ function ExpenseForm() {
       <div className="selects input-control">
         <select
           required
-          value={category}
+          value={category}  // Set the selected category
           name="category"
           id="category"
           onChange={(e) => {
             const value = e.target.value;
             if (value === "add_new") {
-              onOpenModal();
+              onOpenModal(); // Open the modal to add a new category
             } else {
-              setInputState({ ...inputState, category: value });
+              setInputState({ ...inputState, category: value }); // Update the category input
             }
           }}
         >
           <option value="" disabled>
             Select Expense Category
           </option>
+          {/* Loop through combined categories to display options */}
           {combinedCategories.map((c, index) => (
             <option key={index} value={c.value}>
               {c.label}
             </option>
           ))}
-          <option value="add_new">Add New</option>
+          <option value="add_new">Add New</option> {/* Option to add a new category */}
         </select>
       </div>
       <div className="input-control">
@@ -125,7 +133,7 @@ function ExpenseForm() {
           id="description"
           cols="30"
           rows="4"
-          onChange={handleInput("description")}
+          onChange={handleInput("description")} // Update the description input
         ></textarea>
       </div>
       <div className="submit-container">

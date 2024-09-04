@@ -1,34 +1,7 @@
-const {
-  addExpense,
-  getExpense,
-  deleteExpense,
-  updateExpense,
-} = require("../controllers/expense");
-const {
-  addIncome,
-  getIncomes,
-  deleteIncome,
-  updateIncome,
-} = require("../controllers/income");
-const {
-  createDebt,
-  getUserDebts,
-  updateDebt,
-  deleteDebt,
-  addPayment,
-  updatePayment,
-  deletePayment,
-} = require("../controllers/debt");
-const {
-  createGoal,
-  getGoals,
-  getGoalById,
-  updateGoal,
-  deleteGoal,
-  addContribution,
-  updateContribution,
-  deleteContribution,
-} = require("../controllers/goal");
+const { addExpense, getExpense, deleteExpense, updateExpense, } = require("../controllers/expense");
+const { addIncome, getIncomes, deleteIncome, updateIncome, } = require("../controllers/income");
+const { createDebt, getUserDebts, updateDebt, deleteDebt, addPayment, updatePayment, deletePayment, } = require("../controllers/debt");
+const { createGoal, getGoals, getGoalById, updateGoal, deleteGoal, addContribution, updateContribution, deleteContribution, } = require("../controllers/goal");
 const { createCategory, getCategories } = require("../controllers/categories");
 const { authenticateJWT } = require("../middleware/jwtMiddleware");
 

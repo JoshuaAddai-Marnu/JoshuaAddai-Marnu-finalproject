@@ -7,9 +7,11 @@ import IncomeItem from "../IncomeItem/IncomeItem";
 import { Pie } from "react-chartjs-2";
 import { Chart as ChartJs, ArcElement, Tooltip, Legend } from "chart.js";
 
+// Registering necessary Chart.js components for Pie chart
 ChartJs.register(ArcElement, Tooltip, Legend);
 
 function Income() {
+  // Fetching incomes and related actions from global context
   const { incomes, deleteIncome, totalIncome } = useGlobalContext();
 
   // Preparing data for the pie chart
@@ -18,11 +20,12 @@ function Income() {
     return acc;
   }, {});
 
+  // Data structure for the Pie chart, defining categories and colors
   const pieData = {
     labels: Object.keys(incomeCategories),
     datasets: [
       {
-        data: Object.values(incomeCategories),
+        data: Object.values(incomeCategories), // Income values for each category
         backgroundColor: [
           "#f44336", // red
           "#ff9800", // orange
@@ -88,15 +91,18 @@ function Income() {
         <div className="income-content">
           <div className="form-and-list">
             <div className="form-container">
-              <Form />
+              <Form /> {/* Form component for adding income */}
             </div>
           </div>
+          {/* Pie chart for income distribution */}
           <PieChartContainer>
             <h3>Income Distribution by Category</h3>
             <Pie data={pieData} />
             <MotivationalMessage>{currentMessage}</MotivationalMessage>
           </PieChartContainer>
         </div>
+
+        {/* Listing all incomes */}
         <IncomesContainer>
           {incomes.map((income) => {
             const { _id, title, amount, date, category, description, type } =

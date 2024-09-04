@@ -6,16 +6,21 @@ import { plus, circle, trash } from "../../Utils/Icons";
 import { Bar } from "react-chartjs-2";
 import { Chart as ChartJs, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend, } from "chart.js";
 
-import { useInput } from "../../Hooks/useInput";
-import { toaster } from "../../Utils/toaster";
-import { apiClient } from "../../Utils/apiClient";
-import { formatAmount } from "../../Utils/formatAmount";
-import { useGlobalContext } from "../../Context/globalContext";
-ChartJs.register( CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend );
+// Hooks and utility functions
+import { useInput } from "../../Hooks/useInput"; // Custom hook to manage input state
+import { toaster } from "../../Utils/toaster"; // Toaster for displaying success/error messages
+import { apiClient } from "../../Utils/apiClient"; // API client for making HTTP requests
+import { formatAmount } from "../../Utils/formatAmount"; // Utility to format currency
+import { useGlobalContext } from "../../Context/globalContext"; // Importing global context
 
+// Registering necessary Chart.js components
+ChartJs.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
+
+// API base URL
 const BASE_URL = "http://localhost:3001/api/v1/";
 
 function Goals() {
+  // Using a custom hook to manage the form inputs
   const { inputValues, resetInputVlues, updateInputValues } = useInput({
     goalName: "",
     goalDate: "",
@@ -26,9 +31,12 @@ function Goals() {
     selectedGoal: "",
   });
 
+  // Fetching global context for goals and related actions
   const { goals, getGoals, addGoal, updateGoal, deleteGoal } =
     useGlobalContext();
 
+
+  // Fetch goals when the component is mounted
   useEffect(() => {
     getGoals();
   }, []);
@@ -43,8 +51,10 @@ function Goals() {
     contributionDate,
   } = inputValues;
 
+  // State to manage the visibility of contributions
   const [visibleContributions, setVisibleContributions] = useState({});
 
+  // Toggle the visibility of contributions for a particular goal
   const toggleContributions = (goalId) => {
     setVisibleContributions((prevState) => ({
       ...prevState,
@@ -52,12 +62,13 @@ function Goals() {
     }));
   };
 
+  // Function to handle adding a contribution to a goal
   const addContribution = async (goalId, contributionData) => {
     await apiClient
       .post(`${BASE_URL}goals/${goalId}/contributions`, contributionData)
       .then((res) => {
-        resetInputVlues();
-        getGoals();
+        resetInputVlues(); // Reset form inputs
+        getGoals(); // Fetch updated goals
         toaster.success(res?.data?.message || "An error occurred");
       })
       .catch((err) => {
@@ -65,11 +76,12 @@ function Goals() {
       });
   };
 
+  // Function to delete a contribution from a goal
   const deleteContribution = async (goalId, contributionId) => {
     await apiClient
       .delete(`${BASE_URL}goals/${goalId}/contributions/${contributionId}`)
       .then((res) => {
-        getGoals();
+        getGoals(); // Fetch updated goals
         toaster.success(res?.data?.message || "An error occurred");
       })
       .catch((err) =>
@@ -77,46 +89,46 @@ function Goals() {
       );
   };
 
+  // Function to handle adding or editing a goal
   const addOrEditGoal = async (e) => {
     e.preventDefault();
 
-    if (
-      !goalName ||
-      !targetAmount ||
-      parseFloat(targetAmount) <= 0 ||
-      !goalDate
-    ) {
-      toaster.error(
-        "Please enter a valid goal name, target amount and goal date"
-      );
+    // Validate inputs before proceeding
+    if (!goalName || !targetAmount || parseFloat(targetAmount) <= 0 || !goalDate) {
+      toaster.error("Please enter a valid goal name, target amount and goal date");
       return;
     }
 
+    // Preparing goal data to be submitted
     const goalData = {
       name: goalName,
       targetAmount,
       goalDate,
     };
+
+    // Add a new goal or update an existing one
     if (!editingGoalId) {
       await addGoal(goalData).then((res) => {
         if (res.success) {
-          resetInputVlues();
+          resetInputVlues(); // Reset form after successful addition
         }
       });
     } else {
       await updateGoal(editingGoalId, goalData).then((res) => {
         if (res.success) {
-          resetInputVlues();
-          updateInputValues("editingGoalId", null);
+          resetInputVlues(); // Reset form
+          updateInputValues("editingGoalId", null); // Reset editing state
         }
       });
     }
   };
 
+  // Function to delete a goal
   const deleteGoalWithId = async (id) => {
     await deleteGoal(id);
   };
 
+  // Set up form inputs for editing a goal
   const startEditingGoal = (goal) => {
     updateInputValues("goalName", goal.name);
     updateInputValues("targetAmount", goal.targetAmount.toString());
@@ -125,22 +137,20 @@ function Goals() {
     updateInputValues("editingGoalId", goal._id);
   };
 
+
+  // Function to contribute to a goal
   const contributeToGoal = async (e) => {
     e.preventDefault();
 
-    if (
-      !selectedGoal ||
-      !contribution ||
-      parseFloat(contribution) <= 0 ||
-      !contributionDate
-    ) {
-      toaster.error(
-        "Please select a goal, enter a valid contribution amount, and date."
-      );
+    // Validate contribution input
+    if (!selectedGoal || !contribution || parseFloat(contribution) <= 0 || !contributionDate) {
+      toaster.error("Please select a goal, enter a valid contribution amount, and date.");
       return;
     }
 
     const foundGoal = goals.find((goal) => goal._id === selectedGoal);
+
+    // Ensure contribution doesn't exceed target amount
     if (foundGoal?.targetAmount < parseFloat(contribution)) {
       toaster.error(
         "Contribution amount cannot be greater than remaining goal amount."
@@ -148,16 +158,19 @@ function Goals() {
       return;
     }
 
+    // Add contribution to the selected goal
     await addContribution(selectedGoal, {
       amount: parseFloat(contribution),
       contributionDate,
     });
   };
 
+  // delete contribution
   const deleteContributionFromGoal = async (goalId, contributionId) => {
     await deleteContribution(goalId, contributionId);
   };
 
+  // Handle form input changes dynamically
   const handleInput = (name) => (e) => {
     updateInputValues(name, e.target.value);
   };
@@ -172,7 +185,7 @@ function Goals() {
               <h2>
                 {plus} {editingGoalId ? "Edit Goal" : "Add New Goal"}
               </h2>
-
+              {/* Goal input fields */}
               <input
                 type="text"
                 placeholder="Goal Name"
@@ -207,9 +220,11 @@ function Goals() {
               />
             </GoalForm>
 
+            {/* Form for contributing to a goal */}
             <GoalForm onSubmit={contributeToGoal}>
               <h2>{circle} Contribute to Goal</h2>
 
+              {/* Dropdown to select a goal */}
               <select
                 value={selectedGoal}
                 onChange={handleInput("selectedGoal")}
@@ -250,6 +265,7 @@ function Goals() {
             </GoalForm>
           </LeftSide>
 
+          {/* Display the list of goals */}
           <RightSide>
             <GoalList aria-live="polite">
               <h2>Your Goals</h2>
@@ -298,9 +314,13 @@ function Goals() {
                         onClick={() => deleteGoalWithId(goal._id)}
                       />
                     </ButtonContainer>
+
+                    {/* Toggle button to view contributions */}
                     <ToggleContributionsButton onClick={() => toggleContributions(goal._id)}>
                       {visibleContributions[goal._id] ? "Hide Contributions" : "View Contributions"}
                     </ToggleContributionsButton>
+
+                    {/* List of contributions */}
                     {visibleContributions[goal._id] && (
                       <ContributionsList>
                         <h4>Contributions:</h4>
@@ -323,6 +343,8 @@ function Goals() {
                         ))}
                       </ContributionsList>
                     )}
+
+                    {/* Display progress as a bar chart */}
                     <BarChart
                       progress={
                         (goal.contributedAmount / goal.targetAmount) * 100
