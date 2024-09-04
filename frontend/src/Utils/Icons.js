@@ -7,7 +7,7 @@ export const logout = <i className="fa-solid fa-sign-out"></i>
 export const trend = <i className="fa-solid fa-money-bill-trend-up"></i>
 export const expenses = <i className="fa-solid fa-money-bill-transfer"></i>
 export const money = <i className="fa-solid fa-money-bill"></i>
-export const freelance = <i className ="fa-solid fa-earth-americas"></i>
+export const freelance = <i className="fa-solid fa-earth-americas"></i>
 export const stocks = <i className="fa-solid fa-arrow-trend-up"></i>
 export const bitcoin = <i className="fa-brands fa-bitcoin"></i>
 export const piggy = <i className="fa-solid fa-piggy-bank"></i>
@@ -32,3 +32,5 @@ export const goal = <i class="fa-solid fa-bullseye"></i>
 export const loan = <i class="fa-solid fa-scale-unbalanced"></i>
 export const wage = <i class="fa-solid fa-hand-holding-dollar"></i>
 export const edit = <i class="fa-solid fa-pen-to-square"></i>
+export const subscriptions = <i class="fa-solid fa-play"></i>
+export const health = <i class="fa-solid fa-heart-pulse"></i>

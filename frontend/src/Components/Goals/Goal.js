@@ -4,29 +4,14 @@ import { InnerLayout } from "../../Styles/Layouts";
 import Button from "../Button/Button";
 import { plus, circle, trash } from "../../Utils/Icons";
 import { Bar } from "react-chartjs-2";
-import {
-  Chart as ChartJs,
-  CategoryScale,
-  LinearScale,
-  BarElement,
-  Title,
-  Tooltip,
-  Legend,
-} from "chart.js";
+import { Chart as ChartJs, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend, } from "chart.js";
 
 import { useInput } from "../../Hooks/useInput";
 import { toaster } from "../../Utils/toaster";
 import { apiClient } from "../../Utils/apiClient";
 import { formatAmount } from "../../Utils/formatAmount";
 import { useGlobalContext } from "../../Context/globalContext";
-ChartJs.register(
-  CategoryScale,
-  LinearScale,
-  BarElement,
-  Title,
-  Tooltip,
-  Legend
-);
+ChartJs.register( CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend );
 
 const BASE_URL = "http://localhost:3001/api/v1/";
 
@@ -57,6 +42,15 @@ function Goals() {
     selectedGoal,
     contributionDate,
   } = inputValues;
+
+  const [visibleContributions, setVisibleContributions] = useState({});
+
+  const toggleContributions = (goalId) => {
+    setVisibleContributions((prevState) => ({
+      ...prevState,
+      [goalId]: !prevState[goalId],
+    }));
+  };
 
   const addContribution = async (goalId, contributionData) => {
     await apiClient
@@ -304,26 +298,31 @@ function Goals() {
                         onClick={() => deleteGoalWithId(goal._id)}
                       />
                     </ButtonContainer>
-                    <ContributionsList>
-                      <h4>Contributions:</h4>
-                      {goal.contributions.map((contribution, i) => (
-                        <ContributionItem key={contribution._id}>
-                          {i + 1}. £
-                          {formatAmount(contribution.amount.toFixed(2))} on{" "}
-                          {new Date(contribution.date).toLocaleDateString()}
-                          <DeleteContributionButton
-                            onClick={() =>
-                              deleteContributionFromGoal(
-                                goal._id,
-                                contribution._id
-                              )
-                            }
-                          >
-                            {trash}
-                          </DeleteContributionButton>
-                        </ContributionItem>
-                      ))}
-                    </ContributionsList>
+                    <ToggleContributionsButton onClick={() => toggleContributions(goal._id)}>
+                      {visibleContributions[goal._id] ? "Hide Contributions" : "View Contributions"}
+                    </ToggleContributionsButton>
+                    {visibleContributions[goal._id] && (
+                      <ContributionsList>
+                        <h4>Contributions:</h4>
+                        {goal.contributions.map((contribution, i) => (
+                          <ContributionItem key={contribution._id}>
+                            {i + 1}. £
+                            {formatAmount(contribution.amount.toFixed(2))} on{" "}
+                            {new Date(contribution.date).toLocaleDateString()}
+                            <DeleteContributionButton
+                              onClick={() =>
+                                deleteContributionFromGoal(
+                                  goal._id,
+                                  contribution._id
+                                )
+                              }
+                            >
+                              {trash}
+                            </DeleteContributionButton>
+                          </ContributionItem>
+                        ))}
+                      </ContributionsList>
+                    )}
                     <BarChart
                       progress={
                         (goal.contributedAmount / goal.targetAmount) * 100
@@ -511,6 +510,20 @@ const DeleteContributionButton = styled.button`
   font-size: 1rem;
   padding: 0;
   margin-left: 0.5rem;
+`;
+
+const ToggleContributionsButton = styled.button`
+  background-color: #4caf50;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+
+  &:hover {
+    background-color: #45a049;
+  }
 `;
 
 const BarChart = ({ progress }) => {

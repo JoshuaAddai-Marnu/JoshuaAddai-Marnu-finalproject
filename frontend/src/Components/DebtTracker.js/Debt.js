@@ -4,29 +4,14 @@ import { InnerLayout } from "../../Styles/Layouts";
 import Button from "../Button/Button";
 import { plus, circle, trash } from "../../Utils/Icons";
 import { Bar } from "react-chartjs-2";
-import {
-  Chart as ChartJs,
-  CategoryScale,
-  LinearScale,
-  BarElement,
-  Title,
-  Tooltip,
-  Legend,
-} from "chart.js";
+import { Chart as ChartJs, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend } from "chart.js";
 import { useGlobalContext } from "../../Context/globalContext";
 import { useInput } from "../../Hooks/useInput";
 import { toaster } from "../../Utils/toaster";
 import { apiClient } from "../../Utils/apiClient";
 import { formatAmount } from "../../Utils/formatAmount";
 
-ChartJs.register(
-  CategoryScale,
-  LinearScale,
-  BarElement,
-  Title,
-  Tooltip,
-  Legend
-);
+ChartJs.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 
 const BASE_URL = "http://localhost:3001/api/v1/";
 
@@ -38,20 +23,24 @@ function DebtTracker() {
     paymentAmount: "",
     paymentDate: "",
   });
-  const { debtName, totalAmount, debtDate, paymentAmount, paymentDate } =
-    inputValues;
-
-  // const [debts, setDebts] = useState([])
+  const { debtName, totalAmount, debtDate, paymentAmount, paymentDate } = inputValues;
 
   const [selectedDebt, setSelectedDebt] = useState("");
   const [editingDebtId, setEditingDebtId] = useState(null);
+  const [visiblePayments, setVisiblePayments] = useState({});
 
-  const { debts, getDebts, addDebt, updateDebt, deleteDebt } =
-    useGlobalContext();
+  const { debts, getDebts, addDebt, updateDebt, deleteDebt } = useGlobalContext();
 
   useEffect(() => {
     getDebts();
   }, []);
+
+  const togglePayments = (debtId) => {
+    setVisiblePayments((prevState) => ({
+      ...prevState,
+      [debtId]: !prevState[debtId],
+    }));
+  };
 
   const addPayment = async (debtId, paymentData) => {
     await apiClient
@@ -81,13 +70,12 @@ function DebtTracker() {
   const handleInput = (name) => (e) => {
     updateInputValues(name, e.target.value);
   };
-  // Function to add or edit a debt
+
   const addOrEditDebt = async (e) => {
     e.preventDefault();
 
     if (!debtName || !totalAmount || parseFloat(totalAmount) <= 0) {
       toaster.error("Please enter a valid debt name, amount, and date.");
-
       return;
     }
     if (!editingDebtId) {
@@ -110,7 +98,6 @@ function DebtTracker() {
     }
   };
 
-  // Function to edit a debt
   const startEditingDebt = (id) => {
     const debtToEdit = debts.find((debt) => debt._id === id);
     updateInputValues("debtName", debtToEdit.name);
@@ -123,24 +110,15 @@ function DebtTracker() {
   const makePayment = async (e) => {
     e.preventDefault();
 
-    if (
-      !selectedDebt ||
-      !paymentAmount ||
-      parseFloat(paymentAmount) <= 0 ||
-      !paymentDate
-    ) {
-      toaster.error(
-        "Please select a debt, enter a valid payment amount, and payment date."
-      );
+    if (!selectedDebt || !paymentAmount || parseFloat(paymentAmount) <= 0 || !paymentDate) {
+      toaster.error("Please select a debt, enter a valid payment amount, and payment date.");
       return;
     }
 
     if (selectedDebt) {
       const foundDebt = debts.find((debt) => debt._id === selectedDebt);
       if (foundDebt?.totalAmount < parseFloat(paymentAmount)) {
-        toaster.error(
-          "Payment amount cannot be greater than total debt amount."
-        );
+        toaster.error("Payment amount cannot be greater than total debt amount.");
         return;
       }
 
@@ -149,14 +127,6 @@ function DebtTracker() {
         paymentDate,
       });
     }
-  };
-
-  const togglePayments = (id) => {
-    // setDebts(
-    //   debts.map((debt) =>
-    //     debt._id === id ? { ...debt, showPayments: !debt.showPayments } : debt
-    //   )
-    // );
   };
 
   return (
@@ -175,7 +145,6 @@ function DebtTracker() {
                 placeholder="Debt Name"
                 value={debtName}
                 onChange={handleInput("debtName")}
-                // name={"debtName"}
                 required
                 aria-label="Debt Name"
               />
@@ -191,7 +160,6 @@ function DebtTracker() {
                 type="date"
                 value={debtDate}
                 onChange={handleInput("debtDate")}
-                // required
                 aria-label="Debt Date"
               />
               <Button
@@ -260,15 +228,11 @@ function DebtTracker() {
                     <p>Paid: £{debt.paidAmount.toFixed(2)}</p>
                     <p>
                       Remaining: £
-                      {formatAmount(
-                        (debt.totalAmount - debt.paidAmount).toFixed(2)
-                      )}
+                      {formatAmount((debt.totalAmount - debt.paidAmount).toFixed(2))}
                     </p>
                     <p>
                       Progress:{" "}
-                      {formatAmount(
-                        ((debt.paidAmount / debt.totalAmount) * 100).toFixed(2)
-                      )}
+                      {formatAmount(((debt.paidAmount / debt.totalAmount) * 100).toFixed(2))}
                       %
                     </p>
                     <p>
@@ -298,34 +262,28 @@ function DebtTracker() {
                         }}
                       />
                     </ButtonContainer>
-                    {/* <TogglePaymentsButton
-                      onClick={() => togglePayments(debt._id)}
-                    >
-                      {debt.showPayments
-                        ? "Hide Payment Details"
-                        : "Show Payment Details"}
-                    </TogglePaymentsButton> */}
-
-                    <PaymentsList>
-                      {debt.payments && debt.payments.length > 0 ? (
-                        debt.payments.map((payment, i) => (
-                          <PaymentDetail key={payment._id}>
-                            {i + 1}. £{formatAmount(payment.amount.toFixed(2))}{" "}
-                            on {new Date(payment.date).toLocaleDateString()}
-                            <DeletePaymentButton
-                              onClick={() =>
-                                deletePayment(debt._id, payment._id)
-                              }
-                            >
-                              {trash}
-                            </DeletePaymentButton>
-                          </PaymentDetail>
-                        ))
-                      ) : (
-                        <p>No payments made yet.</p>
-                      )}
-                    </PaymentsList>
-
+                    <TogglePaymentsButton onClick={() => togglePayments(debt._id)}>
+                      {visiblePayments[debt._id] ? "Hide Payments" : "Show Payments"}
+                    </TogglePaymentsButton>
+                    {visiblePayments[debt._id] && (
+                      <PaymentsList>
+                        {debt.payments && debt.payments.length > 0 ? (
+                          debt.payments.map((payment, i) => (
+                            <PaymentDetail key={payment._id}>
+                              {i + 1}. £{formatAmount(payment.amount.toFixed(2))}{" "}
+                              on {new Date(payment.date).toLocaleDateString()}
+                              <DeletePaymentButton
+                                onClick={() => deletePayment(debt._id, payment._id)}
+                              >
+                                {trash}
+                              </DeletePaymentButton>
+                            </PaymentDetail>
+                          ))
+                        ) : (
+                          <p>No payments made yet.</p>
+                        )}
+                      </PaymentsList>
+                    )}
                     <BarChart
                       progress={(debt.paidAmount / debt.totalAmount) * 100}
                     />
