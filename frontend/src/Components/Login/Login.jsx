@@ -2,66 +2,78 @@ import { Link, useNavigate } from "react-router-dom";
 import styled, { keyframes } from "styled-components";
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
-import * as yup from "yup";
-import { toast } from "react-toastify";
+import * as yup from "yup"; // Form validation schema library
+import { toast } from "react-toastify"; // Toast notifications for success or error messages
 import { useEffect, useState } from "react";
 import JBB from "../../Img/JBB.png";
-import { FaEnvelope, FaLock } from "react-icons/fa";
+import { FaEnvelope, FaLock } from "react-icons/fa"; // Icons for the form inputs
 
+
+// Defining form validation schema using Yup
 const schema = yup
   .object({
-    email: yup.string().email().required(),
-    password: yup.string().required(),
+    email: yup.string().email().required(), // Validates email input
+    password: yup.string().required(), // Validates password input
   })
   .required();
 
+// Login component for user authentication
 export default function Login() {
+  // State to manage loading status during form submission
   const [isLoading, setIsLoading] = useState(false);
+  // useNavigate is used to programmatically navigate the user
   const router = useNavigate();
 
   useEffect(() => {
-    // redirect to home if user is already logged in
+    // If a user is already logged in (token exists), redirect to the home page
     if (localStorage.getItem("JB_TOKEN")?.length) {
       router("/home");
     }
   }, []);
 
+    // Initializing form handling using react-hook-form with Yup validation resolver
   const {
-    register,
-    handleSubmit,
-    formState: { errors },
+    register, // To register form inputs for validation
+    handleSubmit, // Handles form submission
+    formState: { errors }, // Keeps track of validation errors
   } = useForm({
-    resolver: yupResolver(schema),
+    resolver: yupResolver(schema), // Uses Yup schema to validate the form
   });
 
+  // Form submission handler
   const onSubmit = async (data) => {
-    setIsLoading(true);
+    setIsLoading(true); // Set loading state to true while waiting for the request
+
+    // Sending POST request to login API
     const request = await fetch("http://localhost:3001/api/v1/login", {
       method: "POST",
-      body: JSON.stringify(data),
+      body: JSON.stringify(data), // Sends form data as JSON
       headers: {
         "content-type": "application/json",
       },
     });
 
+        // Handling the response from the API
     if (request.ok) {
-      const response = await request.json();
-      const now = new Date();
-      const futureTime = new Date(now.getTime() + 23 * 60 * 60 * 1000); // Add 23 hours
+      const response = await request.json(); // Parse the response
+      const now = new Date(); // Current date and time
+      const futureTime = new Date(now.getTime() + 23 * 60 * 60 * 1000); // Set expiration time to 23 hours from now
+            // Storing authentication details in localStorage
       localStorage.setItem("JB_TOKEN", response?.data?.token);
       localStorage.setItem("JB_NAME", response?.data?.user?.name);
       localStorage.setItem("JB_LOGGEDIN_TIME", futureTime.toISOString());
-      router("/home");
-      toast("Successfully logged in", { type: "success" });
+      router("/home"); // Navigate to home page after successful login
+      toast("Successfully logged in", { type: "success" }); // Display success message
     } else {
-      toast("Invalid credentials", { type: "error" });
+      toast("Invalid credentials", { type: "error" }); // Display error message if login fails
     }
 
-    setIsLoading(false);
+    setIsLoading(false); // Reset loading state
   };
 
   return (
     <LoginStyled>
+            {/* Floating icons for decorative purposes */}
       <div className="floating-icons">
         <span className="icon fa-solid fa-chart-line"></span>
         <span className="icon fa-solid fa-credit-card"></span>

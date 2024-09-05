@@ -1,19 +1,22 @@
+// Importing necessary libraries and components
 import { Link, useNavigate } from "react-router-dom";
 import styled from "styled-components";
-import { useForm } from "react-hook-form";
-import { yupResolver } from "@hookform/resolvers/yup";
-import * as yup from "yup";
-import { toast } from "react-toastify";
+import { useForm } from "react-hook-form"; // Form handling using React Hook Form
+import { yupResolver } from "@hookform/resolvers/yup"; // Resolver for using Yup with React Hook Form
+import * as yup from "yup"; // For schema validation
+import { toast } from "react-toastify"; // For displaying notifications
 import { useEffect, useState } from "react";
 
+// Defining a validation schema for form inputs using Yup
 const schema = yup
     .object({
-        email: yup.string().email().required(),
-        password: yup.string().required(),
-        name: yup.string().required(),
+        email: yup.string().email().required(), // Email field validation: must be a valid email
+        password: yup.string().required(), // Password field validation: required
+        name: yup.string().required(), // Name field validation: required
     })
     .required();
 
+    // Signup component for user registration
 export default function Signup() {
     const [isLoading, setIsLoading] = useState(false);
     const router = useNavigate();
@@ -25,30 +28,35 @@ export default function Signup() {
         }
     }, []);
 
+    // Initializing form handling with validation using react-hook-form and Yup
     const {
-        register,
-        handleSubmit,
-        formState: { errors },
+        register, // Registers inputs for validation
+        handleSubmit, // Handles form submission
+        formState: { errors }, // Stores validation errors
     } = useForm({
-        resolver: yupResolver(schema),
+        resolver: yupResolver(schema), // Uses Yup schema for validation
     });
 
+    // Form submission handler
     const onSubmit = async (data) => {
-        setIsLoading(true);
+        setIsLoading(true); // Set loading state to true when the form is being submitted
+
+        // Sending a POST request to signup API
         const request = await fetch("http://localhost:3001/api/v1/signup", {
             method: "POST",
-            body: JSON.stringify(data),
+            body: JSON.stringify(data), // Sending the form data as JSON
             headers: { "content-type": "application/json" },
         });
 
-        if (request.ok) {
-            router("/login");
-            toast("Successfully signed up, please log in", { type: "success" });
+         // Handling the response from the API
+         if (request.ok) {
+            router("/login"); // Redirect to login page after successful signup
+            toast("Successfully signed up, please log in", { type: "success" }); // Display success message
         } else {
-            toast("There was an unexpected error", { type: "error" });
+            toast("There was an unexpected error", { type: "error" }); // Display error message
         }
 
-        setIsLoading(false);
+        setIsLoading(false); // Reset loading state after submission
     };
 
     return (
